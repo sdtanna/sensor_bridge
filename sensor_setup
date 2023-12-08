@@ -1,0 +1,58 @@
+import serial
+import numpy as np
+from gui_parser import uartParser
+import time
+# Constants
+DEVICE_LIST = ['Device1', 'Device2']  # Replace with actual device names
+DEMO_NAME_x432_GESTURE = 'GestureDemoName'  # Replace with actual demo name
+DEMO_NAME_LRPD = 'LRPD'  # Replace with actual name
+
+# Configuration
+frame_time = 400  # Set the desired frame time
+
+class SensorParser:
+    def __init__(self, cfg):
+        self.parser = uartParser(type="3D People Tracking")
+        self.cfg = cfg
+    def connectComPorts(self, cli_com_port, data_com_port):
+        
+        try:
+            self.parser.connectComPorts(cli_com_port, data_com_port)
+            print('Connected')
+            return True
+        except Exception as e:
+            print(f"Error connecting to COM ports: {e}")
+            return False
+   
+    def sendCfg(self):
+        self.parser.sendCfg(self.cfg)
+
+    def readData(self):
+        # Read data from the sensor. Implement this based on your sensor's protocol.
+            print(self.parser.readAndParseUartDoubleCOMPort())
+
+
+# Main script
+def main():
+    with open("ISK_6m_default.cfg", 'r') as cfg_file:
+            cfg = cfg_file.readlines()
+    parser = SensorParser(cfg)
+
+    # Read configuration file
+    # TODO: Implement configuration file reading logic
+
+    # Connect to sensor
+    uart_port = '/dev/ttyUSB0'  # Replace with actual UART port
+    if not parser.connectComPorts("/dev/tty.SLAB_USBtoUART", "/dev/tty.SLAB_USBtoUART3"):
+        print("Failed to connect to the sensor.")
+        return
+
+    # Send configuration to sensor
+    parser.sendCfg()
+    # Start reading data
+    while True:
+        parser.readData()
+        time.sleep(frame_time / 1000)
+
+if __name__ == "__main__":
+    main()
