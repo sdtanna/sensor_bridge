@@ -43,7 +43,7 @@ def main():
 
     # Connect to sensor
     uart_port = '/dev/ttyUSB0'  # Replace with actual UART port
-    if not parser.connectComPorts("/dev/tty.SLAB_USBtoUART", "/dev/tty.SLAB_USBtoUART3"):
+    if not parser.connectComPorts("/dev/ttyUSB0", "/dev/ttyUSB1"):
         print("Failed to connect to the sensor.")
         return
 
