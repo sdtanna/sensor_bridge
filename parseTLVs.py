@@ -215,28 +215,28 @@ def parseCompressedSphericalPointCloudTLV(tlvData, tlvLength, pointCloud):
     for i in range(numPoints):
         try:
             elevation, azimuth, doppler, rng, snr = struct.unpack(pointStruct, tlvData[:pointSize])
+        
+        
+            tlvData = tlvData[pointSize:]
+            if (azimuth >= 128):
+                print ('Az greater than 127')
+                azimuth -= 256
+            if (elevation >= 128):
+                print ('Elev greater than 127')
+                elevation -= 256
+            if (doppler >= 32768):
+                print ('Doppler greater than 32768')
+                doppler -= 65536
+            # Decompress values
+            pointCloud[i,0] = rng * pUnit[3]          # Range
+            pointCloud[i,1] = azimuth * pUnit[1]      # Azimuth
+            pointCloud[i,2] = elevation * pUnit[0]    # Elevation
+            pointCloud[i,3] = doppler * pUnit[2]      # Doppler
+            pointCloud[i,4] = snr * pUnit[4]          # SNR
         except:
             numPoints = i
             print('Error: Point Cloud TLV Parser Failed')
             break
-        
-        tlvData = tlvData[pointSize:]
-        if (azimuth >= 128):
-            print ('Az greater than 127')
-            azimuth -= 256
-        if (elevation >= 128):
-            print ('Elev greater than 127')
-            elevation -= 256
-        if (doppler >= 32768):
-            print ('Doppler greater than 32768')
-            doppler -= 65536
-        # Decompress values
-        pointCloud[i,0] = rng * pUnit[3]          # Range
-        pointCloud[i,1] = azimuth * pUnit[1]      # Azimuth
-        pointCloud[i,2] = elevation * pUnit[0]    # Elevation
-        pointCloud[i,3] = doppler * pUnit[2]      # Doppler
-        pointCloud[i,4] = snr * pUnit[4]          # SNR
-
     # Convert from spherical to cartesian
     pointCloud[:,0:3] = sphericalToCartesianPointCloud(pointCloud[:, 0:3])
     return numPoints, pointCloud
