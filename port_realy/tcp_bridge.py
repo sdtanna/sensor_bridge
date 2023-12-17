@@ -3,14 +3,14 @@ import socket
 import threading
 
 # Configuration for your serial ports
-cliCom = '/dev/ttyS1'  # Change to your first serial port
-dataCom = '/dev/ttyS2'  # Change to your second serial port
+cliCom = '/dev/ttyUSB0'  # Change to your first serial port
+dataCom = '/dev/ttyUSB1'  # Change to your second serial port
 baud_rate = 9600  # Modify as per your requirement
 
 # TCP server configuration
 tcp_ip = '0.0.0.0'  # Listening on all interfaces
-tcp_port = 5000  # TCP port
-
+tcp_port = 5000  # ßTCP port
+ß
 # Initialize serial connections
 ser1 = serial.Serial(cliCom, 115200,parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.6)
 ser2 = serial.Serial(dataCom, 921600,parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.6)
