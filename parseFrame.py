@@ -11,7 +11,7 @@ import datetime
 
 # Local File Imports
 from parseTLVs import *
-from gui_common import *
+from common import *
 
 def parseStandardFrame(frameData):
     # Constants for parsing frame header

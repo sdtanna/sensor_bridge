@@ -5,7 +5,7 @@ h11==0.14.0
 idna==3.6
 numpy==1.26.2
 pyserial==3.5
-python-engineio==4.8.0
+python-engineio==4.8.1
 python-socketio==5.10.0
 requests==2.31.0
 simple-websocket==1.0.0

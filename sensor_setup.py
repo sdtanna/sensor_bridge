@@ -1,21 +1,16 @@
-import serial
 import numpy as np
-from gui_parser import uartParser
+from parser import uartParser
 import time
-# Constants
-DEVICE_LIST = ['Device1', 'Device2']  # Replace with actual device names
-DEMO_NAME_x432_GESTURE = 'GestureDemoName'  # Replace with actual demo name
-DEMO_NAME_LRPD = 'LRPD'  # Replace with actual name
 
 # Configuration
-frame_time = 400  # Set the desired frame time
+frame_time = 30  # Set the desired frame time
 
 class SensorParser:
     def __init__(self, cfg):
         self.parser = uartParser(type="3D People Tracking")
         self.cfg = cfg
+
     def connectComPorts(self, cli_com_port, data_com_port):
-        
         try:
             self.parser.connectComPorts(cli_com_port, data_com_port)
             print('Connected')
@@ -39,11 +34,11 @@ def main():
     parser = SensorParser(cfg)
 
     # Read configuration file
-    # TODO: Implement configuration file reading logic
 
     # Connect to sensor
-    uart_port = '/dev/ttyUSB0'  # Replace with actual UART port
+
     if not parser.connectComPorts("/dev/ttyUSB0", "/dev/ttyUSB1"):
+    # if not parser.connectComPorts("/dev/tty.SLAB_USBtoUART3", "/dev/tty.SLAB_USBtoUART"):
         print("Failed to connect to the sensor.")
         return
 

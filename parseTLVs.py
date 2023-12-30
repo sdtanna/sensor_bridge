@@ -9,7 +9,7 @@ import os
 import datetime
 
 # Local File Imports
-from gui_common import *
+from common import *
 
 # ================================================== Common Helper Functions ==================================================
 
