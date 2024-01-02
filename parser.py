@@ -7,9 +7,7 @@ import time
 import numpy as np
 import math
 import datetime
-import json
-#import websocket
-import socketio
+
 
 
 
@@ -28,9 +26,9 @@ from parseFrame import *
 # Then call readAndParseUart() to read one frame of data from the device. The gui this is packaged with calls this every frame period.
 # readAndParseUart() will return all radar detection and tracking information.
 class uartParser():
-    def __init__(self,type='SDK Out of Box Demo'):
+    def __init__(self,type='SDK Out of Box Demo', socket_handler = None):
         # Set this option to 1 to save UART output from the radar device
-        
+        self.socket_handler = socket_handler
         self.saveBinary = 0
         self.replay = 0
         self.binData = bytearray(0)
@@ -67,37 +65,8 @@ class uartParser():
         self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')
         self.connect_websocket()
         
-    def convert_numpy(self, data):
-        """ Convert all numpy arrays in the data to lists for JSON serialization """
-        if isinstance(data, np.ndarray):
-            return data.tolist()
-        elif isinstance(data, dict):
-            return {k: self.convert_numpy(v) for k, v in data.items()}
-        elif isinstance(data, list):
-            return [self.convert_numpy(v) for v in data]
-        else:
-            return data
-    def connect_websocket(self):
-        """ Connect to Socket.IO server """
-        sio_url = 'https://websocket-playground-9faa6ad4da71.herokuapp.com'
-        self.sio = socketio.Client()
-        try:
-            self.sio.connect(sio_url)
-            print(f"Connected to Socket.IO server at {sio_url}")
-        except Exception as e:
-            print(f"Failed to connect to Socket.IO: {e}")
 
-    def send_data_to_websocket(self, data):
-        """ Send data to WebSocket server """
-        if self.sio:
-            try:
-                # Assuming 'frame_data' is the event name you want to emit
-                data = self.convert_numpy(data)
-                self.sio.emit('event_name', data)
-                print("Data sent to Socket.IO server")
-            except Exception as e:
-                print(f"Error sending data to Socket.IO: {e}")
-
+        
     def WriteFile(self, data):
         filepath=self.now_time + '.bin'
         objStruct = '6144B'
@@ -193,7 +162,8 @@ class uartParser():
         else:
             print ('FAILURE: Bad parserType')
         outputDict = parseStandardFrame(frameData)
-        self.send_data_to_websocket(outputDict)
+        data = self.socket_handler.convert_numpy_to_list(outputDict)
+        self.socket_handler.send_data_to_websocket("data_packet_sensor1",data)
         return outputDict
 
     # This function is identical to the readAndParseUartDoubleCOMPort function, but it's modified to work for SingleCOMPort devices in the xWRLx432 family
