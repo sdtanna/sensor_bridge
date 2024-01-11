@@ -18,7 +18,7 @@ from common import *
 # Order should be Range, Elevation, Azimuth
 def sphericalToCartesianPointCloud(sphericalPointCloud):
     shape = sphericalPointCloud.shape
-    cartestianPointCloud = sphericalPointCloud.copy()
+    cartestianPointCloud = sphericalPointCloud.copy() 
     if (shape[1] < 3):
         print('Error: Failed to convert spherical point cloud to cartesian due to numpy array with too few dimensions')
         return sphericalPointCloud
@@ -249,12 +249,15 @@ def parseCompressedSphericalPointCloudTLV(tlvData, tlvLength, pointCloud):
 #float        posX;    /*! @brief   Detected target X coordinate, in m */
 #float        posY;    /*! @brief   Detected target Y coordinate, in m */
 #float        posZ;    /*! @brief   Detected target Z coordinate, in m */
+
 #float        velX;    /*! @brief   Detected target X velocity, in m/s */
 #float        velY;    /*! @brief   Detected target Y velocity, in m/s */
 #float        velZ;    /*! @brief   Detected target Z velocity, in m/s */
+
 #float        accX;    /*! @brief   Detected target X acceleration, in m/s2 */
 #float        accY;    /*! @brief   Detected target Y acceleration, in m/s2 */
 #float        accZ;    /*! @brief   Detected target Z acceleration, in m/s2 */
+
 #float        ec[16];  /*! @brief   Target Error covarience matrix, [4x4 float], in row major order, range, azimuth, elev, doppler */
 #float        g;
 #float        confidenceLevel;    /*! @brief   Tracker confidence metric*/
