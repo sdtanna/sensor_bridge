@@ -84,10 +84,10 @@ class Sensor():
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
-            self.parser.sendLine("sensorStop")
-            self.parser.sendLine("resetDevice")
+            self.parser.sendLine("sensorStop\n")
+            self.parser.sendLine("resetDevice\n")
         elif command == 'resetSensor':
-            self.parser.sendLine("resetDevice")
+            self.parser.sendLine("resetDevice\n")
         else:
             # Code to handle other commands
             print(f"Received command: {command}")
