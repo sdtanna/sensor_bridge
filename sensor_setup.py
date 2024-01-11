@@ -19,9 +19,7 @@ class Sensor():
         self.sh = socket_handler.socketHandeler()
         self.sh.init_socketIO()
         # register event handlers for commands from the server
-        self.sh.sio.on('start_sensor1', self.sensor_start)
-        self.sh.sio.on('stop_sensor1', self.sensor_stop)
-        self.sh.sio.on('reset_sensor1', self.sensor_reset)
+        self.sh.sio.on('command', self.sensor_cmd)
 
         self.logger = logging.getLogger(__name__)
 
@@ -72,14 +70,28 @@ class Sensor():
             time.sleep(1/self.FPS)
 
 
-    def sensor_stop(self):
-        self.parser.sendLine("sensorStop\n")
-        self.sensor_reset()
-    def sensor_reset(self):
-        self.parser.sendLine("resetDevice\n")
-    def sensor_start(self):
-        self.parser.sendCfg(self.cfg)
 
+    def sensor_cmd(self, data):
+        command = data['data']
+
+        if command == 'startSensor':
+            # Code to handle startSensor command
+            self.parser.sendCfg(self.cfg)
+
+        elif command == 'stopSensor':
+            # Code to handle stopSensor command
+            self.parser.sendLine("sensorStop")
+            self.parser.sendLine("resetDevice")
+        elif command == 'resetSensor':
+            self.parser.sendLine("resetDevice")
+        else:
+            # Code to handle other commands
+            print(f"Received command: {command}")
+
+
+        # You can add more elif blocks for other specific commands if needed
+
+    # sensor_response
 if __name__ == "__main__":
     sensor = Sensor()
     sensor.start()
