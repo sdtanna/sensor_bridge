@@ -11,8 +11,8 @@ import atexit
 class Sensor():
         
     FPS = 15  # Set the desired frame time
-    CLI_COM_PORT = "/dev/tty.SLAB_USBtoUART"
-    DATA_COM_PORT = "/dev/tty.SLAB_USBtoUART3"
+    CLI_COM_PORT = "/dev/ttyUSB0"
+    DATA_COM_PORT = "/dev/ttyUSB1"
 
     def __init__(self):
         #Iniitalize socket handler
