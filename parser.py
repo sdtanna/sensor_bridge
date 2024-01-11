@@ -1,6 +1,7 @@
 # ----- Imports -------------------------------------------------------
 
 # Standard Imports
+import logging
 import struct
 import serial
 import time
@@ -26,7 +27,7 @@ from parseFrame import *
 # Then call readAndParseUart() to read one frame of data from the device. The gui this is packaged with calls this every frame period.
 # readAndParseUart() will return all radar detection and tracking information.
 class uartParser():
-    def __init__(self,type='SDK Out of Box Demo', socket_handler = None):
+    def __init__(self,type='SDK Out of Box Demo', socket_handler = None, logger = None):
         # Set this option to 1 to save UART output from the radar device
         self.socket_handler = socket_handler
         self.saveBinary = 0
@@ -35,7 +36,14 @@ class uartParser():
         self.uartCounter = 0
         self.framesPerFile = 100
         self.first_file = True
+
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(__name__)
+
         self.filepath = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+
             
         if (type == DEMO_NAME_OOB):
             self.parserType = "DoubleCOMPort"
@@ -59,11 +67,10 @@ class uartParser():
         elif (type == "Replay"):
             self.replay = 1
         else: 
-            print ("ERROR, unsupported demo type selected!")
+            self.logger.error(" unsupported demo type selected!")
         
         # Data storage
         self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')
-        self.connect_websocket()
         
 
         
@@ -77,7 +84,7 @@ class uartParser():
 
     def setSaveBinary(self, saveBinary):
         self.saveBinary = saveBinary
-        print(self.saveBinary)
+
 
     # This function is always called - first read the UART, then call a function to parse the specific demo output
     # This will return 1 frame of data. This must be called for each frame of data that is expected. It will return a dict containing all output info
@@ -98,8 +105,8 @@ class uartParser():
             # Which means magicByte will hold no data, and the call to magicByte[0] will produce an error
             # This check ensures we can give a meaningful error
             if (len(magicByte) < 1):
-                print ("ERROR: No data detected on COM Port, read timed out")
-                print("\tBe sure that the device is in the proper mode, and that the cfg you are sending is valid")
+                # self.logger.error("ERROR: No data detected on COM Port, read timed out")
+                # self.logger.error("\tBe sure that the device is in the proper mode, and that the cfg you are sending is valid")
                 magicByte = self.dataCom.read(1)
                 
             # Found matching byte
@@ -163,14 +170,15 @@ class uartParser():
             print ('FAILURE: Bad parserType')
         outputDict = parseStandardFrame(frameData)
         data = self.socket_handler.convert_numpy_to_list(outputDict)
-        self.socket_handler.send_data_to_websocket("data_packet_sensor1",data)
+        self.socket_handler.send_data_to_websocket("sensor_datapacket_1",data)
+
         return outputDict
 
     # This function is identical to the readAndParseUartDoubleCOMPort function, but it's modified to work for SingleCOMPort devices in the xWRLx432 family
     def readAndParseUartSingleCOMPort(self):
         # Reopen CLI port
         if(self.cliCom.isOpen() == False):
-            print("Reopening Port")
+            self.logger.info("Reopening Port")
             self.cliCom.open()
 
         self.fail = 0
@@ -186,8 +194,8 @@ class uartParser():
             # Which means magicByte will hold no data, and the call to magicByte[0] will produce an error
             # This check ensures we can give a meaningful error
             if (len(magicByte) < 1):
-                print ("ERROR: No data detected on COM Port, read timed out")
-                print("\tBe sure that the device is in the proper mode, and that the cfg you are sending is valid")
+                # self.logger.error("ERROR: No data detected on COM Port, read timed out")
+                # self.logger.error("\tBe sure that the device is in the proper mode, and that the cfg you are sending is valid")
                 magicByte = self.cliCom.read(1)
 
             # Found matching byte
@@ -257,17 +265,17 @@ class uartParser():
     # Connect to com ports
     # Call this function to connect to the comport. This takes arguments self (intrinsic), cliCom, and dataCom. No return, but sets internal variables in the parser object.
     def connectComPorts(self, cliCom, dataCom):
-        self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.6)
-        self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.6)
+        self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
+        self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
         self.dataCom.reset_output_buffer()
-        print('Connected')
+        self.logger.info('Connected')
     
     # Separate connectComPort (not PortS) for IWRL6432 because it only uses one port
     def connectComPort(self, cliCom, cliBaud=115200):
         # Longer timeout time for IWRL6432 to support applications with low power / low update rate
         self.cliCom = serial.Serial(cliCom, cliBaud, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=4)
         self.cliCom.reset_output_buffer()
-        print('Connected (one port)')
+        self.logger.info('Connected (one port)')
 
     #send cfg over uart
     def sendCfg(self, cfg):
@@ -281,28 +289,28 @@ class uartParser():
                 cfg[i] = cfg[i] + '\n'
 
         for line in cfg:
-            time.sleep(.03) # Line delay
+            time.sleep(.1) # Line delay
 
             if(self.cliCom.baudrate == 1250000):
                 for char in [*line]:
-                    time.sleep(.001) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
+                    time.sleep(.01) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
                     self.cliCom.write(char.encode())
             else:
                 self.cliCom.write(line.encode())
                 
             ack = self.cliCom.readline()
-            print(ack)
+            self.logger.info(ack)
             ack = self.cliCom.readline()
-            print(ack)
+            self.logger.info(ack)
             splitLine = line.split()
             if(splitLine[0] == "baudRate"): # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
                 try:
                     self.cliCom.baudrate = int(splitLine[1])
                 except:
-                    print("Error - Invalid baud rate")
+                    self.logger.error("Invalid baud rate")
                     sys.exit(1)
         # Give a short amount of time for the buffer to clear
-        time.sleep(0.03)
+        time.sleep(0.1)
         self.cliCom.reset_input_buffer()
         # NOTE - Do NOT close the CLI port because 6432 will use it after configuration
 
@@ -310,10 +318,17 @@ class uartParser():
     #send single command to device over UART Com.
     def sendLine(self, line):
         self.cliCom.write(line.encode())
+        time.sleep(.1)
         ack = self.cliCom.readline()
-        print(ack)
+
+        self.logger.info(ack)
+        time.sleep(.1)
+
         ack = self.cliCom.readline()
-        print(ack)
+        time.sleep(.1)
+
+        self.logger.info(ack)
+        time.sleep(.1)
 
     # def replayHist(self):
     #     if (self.replayData):

@@ -5,83 +5,82 @@ import socket_handler as socket_handler
 import logging
 from datetime import datetime
 from threading import Thread
-
-
-# Configuration
-FRAME_TIME = 30  # Set the desired frame time
-CLI_COM_PORT = "/dev/tty.SLAB_USBtoUART3"
-DATA_COM_POROT = "/dev/tty.SLAB_USBtoUART"
-
-
-
-
-logger = logging.getLogger(__name__)
-
-# Create handlers
 import socket_logger
-s_handler = socket_logger.socket_logger()
-c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
-c_handler.setLevel(logging.INFO)
-f_handler.setLevel(logging.DEBUG)
-s_handler.setLevel(logging.INFO)
+import atexit
 
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-s_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
-s_handler.setFormatter(s_format)
+class Sensor():
+        
+    FPS = 15  # Set the desired frame time
+    CLI_COM_PORT = "/dev/tty.SLAB_USBtoUART"
+    DATA_COM_PORT = "/dev/tty.SLAB_USBtoUART3"
+
+    def __init__(self):
+        #Iniitalize socket handler
+        self.sh = socket_handler.socketHandeler()
+        self.sh.init_socketIO()
+        # register event handlers for commands from the server
+        self.sh.sio.on('start_sensor1', self.sensor_start)
+        self.sh.sio.on('stop_sensor1', self.sensor_stop)
+        self.sh.sio.on('reset_sensor1', self.sensor_reset)
+
+        self.logger = logging.getLogger(__name__)
+
+        atexit.register(self.sensor_stop)
+
+        
+
+        #socket logger
+        if self.sh.connected:
+            s_handler = socket_logger.socket_logger(self.sh)
+            s_handler.setLevel(logging.INFO)
+            self.logger.addHandler(s_handler)
 
 
-# Add handlers to the logger
-logger.addHandler(c_handler)
-logger.addHandler(f_handler)
-logger.addHandler(s_handler)
+        #console_logger
+        c_handler = logging.StreamHandler()
+        c_handler.setLevel(logging.INFO)
+        self.logger.addHandler(c_handler)
+
+        #file_logger
+        f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
+        f_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(f_handler)
+        self.logger.setLevel(logging.INFO)
+        self.logger.info("Logger initialized")
+        self.logger.info("Initializing Sensor")
+        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh, logger= self.logger)
+
+        try:
+            self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
+            self.logger.info('Connected')
+        except Exception as e:
+            self.logger.error(f"Error connecting to COM ports: {e}")
+
+    def start(self):
+        self.logger.info("Starting Sensor")
+        
+        
+        with open("ISK_6m_default.cfg", 'r') as cfg_file:
+                self.cfg = cfg_file.readlines()
+        self.logger.info("sending cfg")
+        self.parser.sendCfg(self.cfg)
+
+        self.logger.info("entering main loop")
+        while True:
+
+            self.parser.readAndParseUartDoubleCOMPort()
+            time.sleep(1/self.FPS)
 
 
-logger.warning('This is a warning')
-logger.error('This is an error')
+    def sensor_stop(self):
+        self.parser.sendLine("sensorStop\n")
+        self.sensor_reset()
+    def sensor_reset(self):
+        self.parser.sendLine("resetDevice\n")
+    def sensor_start(self):
+        self.parser.sendCfg(self.cfg)
 
-is_running = True
-# Main script
-def main():
-
-    socket_handler = socket_handler.socketHandeler(logger = None)
-    socket_handler.init_socketIO()
-    
-    parser = uartParser(type="3D People Tracking", socket_handler = socket_handler)
-
-    try:
-        parser.connectComPorts(CLI_COM_PORT, DATA_COM_POROT)
-        print('Connected')
-    except Exception as e:
-        print(f"Error connecting to COM ports: {e}")
-
-    with open("ISK_6m_default.cfg", 'r') as cfg_file:
-            cfg = cfg_file.readlines()
-    parser.sendCfg(cfg)
-
-    reader_thread = Thread(target=read_data, args=[parser])
-    reader_thread.run()
-    reader_thread.join()
-
-def read_data(parser):
-
-    while is_running:
-        print(parser.readAndParseUartDoubleCOMPort())
-        time.sleep(FRAME_TIME / 1000)
-    
-
-def write_line(parser,line):
-    parser.sendLine(line)
-
-def stop_reading():
-    global is_running
-    is_running = False
-    
 if __name__ == "__main__":
-    main()
-
+    sensor = Sensor()
+    sensor.start()
 
