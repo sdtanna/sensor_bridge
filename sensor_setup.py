@@ -69,7 +69,11 @@ class Sensor():
             self.parser.readAndParseUartDoubleCOMPort()
             time.sleep(1/self.FPS)
 
-
+    def sensor_stop(self):
+        self.logger.info("Stopping Sensor")
+        self.parser.sendLine("sensorStop")
+        self.parser.sendLine("resetDevice")
+        self.logger.info("Sensor Stopped")
 
     def sensor_cmd(self, data):
         command = data['data']
