@@ -10,7 +10,7 @@ import atexit
 
 class Sensor():
         
-    FPS = 15  # Set the desired frame time
+    FPS = 16  # Set the desired frame time
     CLI_COM_PORT = "/dev/ttyUSB0"
     DATA_COM_PORT = "/dev/ttyUSB1"
 
@@ -64,10 +64,14 @@ class Sensor():
         self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
+        parser_thread = Thread(target=self.parse_data)
+        parser_thread.start()
         while True:
-
-            self.parser.readAndParseUartDoubleCOMPort()
-            time.sleep(1/self.FPS)
+            logging.debug("running")
+            time.sleep(1)
+    def parse_data(self):
+        self.parser.readAndParseUartDoubleCOMPort()
+        time.sleep(1/self.FPS)
 
     def sensor_stop(self):
         self.logger.info("Stopping Sensor")
@@ -84,7 +88,6 @@ class Sensor():
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
-            self.parser.sendLine("sensorStop\n")
             self.parser.sendLine("resetDevice\n")
         elif command == 'resetSensor':
             self.parser.sendLine("resetDevice\n")
