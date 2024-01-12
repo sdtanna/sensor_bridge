@@ -77,6 +77,10 @@ class Sensor():
             time.sleep(1/self.FPS)
 
 
+    def sensor_stop(self):
+        self.logger.info("Stopping Sensor")
+        self.parser.sendLine("resetDevice\n")
+        self.logger.info("Sensor Stopped")
 
     def sensor_cmd(self, data):
         command = data['data']
