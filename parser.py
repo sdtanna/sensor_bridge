@@ -165,7 +165,11 @@ class uartParser():
  
         # frameData now contains an entire frame, send it to parser
         if (self.parserType == "DoubleCOMPort"):
-            outputDict = parseStandardFrame(frameData)
+            try:
+                outputDict = parseStandardFrame(frameData)
+            except:
+                self.logger.error("Failed to parse frame")
+                outputDict = {}
         else:
             print ('FAILURE: Bad parserType')
         outputDict = parseStandardFrame(frameData)
