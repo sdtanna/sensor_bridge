@@ -39,12 +39,15 @@ def parseStandardFrame(frameData):
 
     # Save frame number to output
     outputDict['frameNum'] = frameNum
-
-    # Initialize the point cloud struct since it is modified by multiple TLV's
-    # Each point has the following: X, Y, Z, Doppler, SNR, Noise, Track index
-    outputDict['pointCloud'] = np.zeros((numDetectedObj, 7), np.float64)
-    # Initialize the track indexes to a value which indicates no track
-    outputDict['pointCloud'][:, 6] = 255
+    try:
+        # Initialize the point cloud struct since it is modified by multiple TLV's
+        # Each point has the following: X, Y, Z, Doppler, SNR, Noise, Track index
+        outputDict['pointCloud'] = np.zeros((numDetectedObj, 7), np.float64)
+        # Initialize the track indexes to a value which indicates no track
+        outputDict['pointCloud'][:, 6] = 255
+    except:
+        print('Error: Failed to initialize pointCloud array')
+        outputDict['error'] = 1
     # Find and parse all TLV's
     for i in range(numTLVs):
         try:
