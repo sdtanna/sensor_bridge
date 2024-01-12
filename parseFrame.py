@@ -15,7 +15,7 @@ from common import *
 
 def parseStandardFrame(frameData):
     # Constants for parsing frame header
-    print(frameData)
+
     headerStruct = 'Q8I'
     frameHeaderLen = struct.calcsize(headerStruct)
     tlvHeaderLength = 8
@@ -33,6 +33,7 @@ def parseStandardFrame(frameData):
     except:
         print('Error: Could not read frame header')
         outputDict['error'] = 1
+        print(frameData)
 
     # Move frameData ptr to start of 1st TLV   
     frameData = frameData[frameHeaderLen:]
@@ -49,6 +50,8 @@ def parseStandardFrame(frameData):
     except:
         print('Error: Failed to initialize pointCloud array')
         outputDict['error'] = 1
+        print(frameData)
+
     # Find and parse all TLV's
     for i in range(numTLVs):
         try:
@@ -57,6 +60,8 @@ def parseStandardFrame(frameData):
             totalLenCheck += tlvHeaderLength
         except:
             print('TLV Header Parsing Failure: Ignored frame due to parsing error')
+            print(frameData)
+
             outputDict['error'] = 2
             return {}
 
@@ -153,6 +158,8 @@ def parseStandardFrame(frameData):
             outputDict['rx_chan_comp'] = parseRXChanCompTLV(frameData[:tlvLength], tlvLength)
         else:
             print ("Warning: invalid TLV type: %d" % (tlvType))
+            print(frameData)
+
 
         # Move to next TLV
         frameData = frameData[tlvLength:]

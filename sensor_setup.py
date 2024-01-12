@@ -66,7 +66,7 @@ class Sensor():
         self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
-        parser_thread = Thread(target=self.parse_data)
+        parser_thread = Thread(target=self.parse_data, daemon=True)
         parser_thread.start()
         while True:
             logging.debug("running")
@@ -76,14 +76,7 @@ class Sensor():
             self.parser.readAndParseUartDoubleCOMPort()
             time.sleep(1/self.FPS)
 
-    def stop_parser(self):
-        self.is_running = False
 
-    def sensor_stop(self):
-        self.logger.info("Stopping Sensor")
-        self.parser.sendLine("sensorStop")
-        self.parser.sendLine("resetDevice")
-        self.logger.info("Sensor Stopped")
 
     def sensor_cmd(self, data):
         command = data['data']
@@ -96,7 +89,7 @@ class Sensor():
             # Code to handle stopSensor command
             self.stop_parser()
             self.parser.sendLine("resetDevice\n")
-            
+
         elif command == 'resetSensor':
             self.parser.sendLine("resetDevice\n")
         else:
