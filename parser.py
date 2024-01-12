@@ -164,17 +164,17 @@ class uartParser():
                 self.binData = []
  
         # frameData now contains an entire frame, send it to parser
-        if (self.parserType == "DoubleCOMPort"):
-            try:
+        try:
+            if (self.parserType == "DoubleCOMPort"):
                 outputDict = parseStandardFrame(frameData)
-            except:
-                self.logger.error("Failed to parse frame")
-                outputDict = {}
-        else:
-            print ('FAILURE: Bad parserType')
-        outputDict = parseStandardFrame(frameData)
-        data = self.socket_handler.convert_numpy_to_list(outputDict)
-        self.socket_handler.send_data_to_websocket("sensor_datapacket_1",data)
+
+            else:
+                print ('FAILURE: Bad parserType')
+            outputDict = parseStandardFrame(frameData)
+            data = self.socket_handler.convert_numpy_to_list(outputDict)
+            self.socket_handler.send_data_to_websocket("sensor_datapacket_1",data)
+        except:
+            print("error parsung frame")
 
         return outputDict
 
