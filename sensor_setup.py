@@ -23,6 +23,8 @@ class Sensor():
 
         self.logger = logging.getLogger(__name__)
 
+        self.is_running = True
+
         atexit.register(self.sensor_stop)
 
         
@@ -70,8 +72,12 @@ class Sensor():
             logging.debug("running")
             time.sleep(1)
     def parse_data(self):
-        self.parser.readAndParseUartDoubleCOMPort()
-        time.sleep(1/self.FPS)
+        while self.is_running:
+            self.parser.readAndParseUartDoubleCOMPort()
+            time.sleep(1/self.FPS)
+
+    def stop_parser(self):
+        self.is_running = False
 
     def sensor_stop(self):
         self.logger.info("Stopping Sensor")
@@ -88,7 +94,9 @@ class Sensor():
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
+            self.stop_parser()
             self.parser.sendLine("resetDevice\n")
+            
         elif command == 'resetSensor':
             self.parser.sendLine("resetDevice\n")
         else:
