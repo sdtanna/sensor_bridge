@@ -15,6 +15,7 @@ from common import *
 
 def parseStandardFrame(frameData):
     # Constants for parsing frame header
+    print(frameData)
     headerStruct = 'Q8I'
     frameHeaderLen = struct.calcsize(headerStruct)
     tlvHeaderLength = 8
