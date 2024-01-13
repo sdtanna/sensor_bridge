@@ -92,7 +92,6 @@ class Sensor():
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
-            self.stop_parser()
             self.parser.sendLine("sensorStop\n")
 
         elif command == 'resetSensor':
