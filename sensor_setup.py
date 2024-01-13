@@ -48,6 +48,7 @@ class Sensor():
         self.logger.setLevel(logging.INFO)
         self.logger.info("Logger initialized")
         self.logger.info("Initializing Sensor")
+
         self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh, logger= self.logger)
 
         try:
@@ -63,7 +64,7 @@ class Sensor():
         with open("ISK_6m_default.cfg", 'r') as cfg_file:
                 self.cfg = cfg_file.readlines()
         self.logger.info("sending cfg")
-        self.parser.sendCfg(self.cfg)
+        # self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
         parser_thread = Thread(target=self.parse_data, daemon=True)
@@ -87,15 +88,18 @@ class Sensor():
 
         if command == 'startSensor':
             # Code to handle startSensor command
-            self.parser.sendCfg(self.cfg)
+            self.parser.sendLine("sensorStart 0\n")
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
             self.stop_parser()
-            self.parser.sendLine("resetDevice\n")
+            self.parser.sendLine("sensorStop\n")
 
         elif command == 'resetSensor':
             self.parser.sendLine("resetDevice\n")
+        
+        elif command == 'cfg':
+            self.parser.sendCfg(self.cfg)
         else:
             # Code to handle other commands
             print(f"Received command: {command}")
