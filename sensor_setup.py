@@ -64,7 +64,7 @@ class Sensor():
         with open("ISK_6m_default.cfg", 'r') as cfg_file:
                 self.cfg = cfg_file.readlines()
         self.logger.info("sending cfg")
-        # self.parser.sendCfg(self.cfg)
+        self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
         parser_thread = Thread(target=self.parse_data, daemon=True)
