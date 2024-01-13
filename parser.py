@@ -173,11 +173,13 @@ class uartParser():
             outputDict = parseStandardFrame(frameData)
             data = self.socket_handler.convert_numpy_to_list(outputDict)
             self.socket_handler.send_data_to_websocket("sensor_datapacket_1",data)
+            
+            return outputDict
+
         except:
             print("error parsung frame")
 
-        return outputDict
-
+        
     # This function is identical to the readAndParseUartDoubleCOMPort function, but it's modified to work for SingleCOMPort devices in the xWRLx432 family
     def readAndParseUartSingleCOMPort(self):
         # Reopen CLI port
