@@ -6,7 +6,7 @@ import logging
 class socketHandeler():
     def __init__(self):
         self.sio_url = 'https://websocket-playground-9faa6ad4da71.herokuapp.com'
-        self.sio = socketio.Client()
+        self.sio = socketio.Client(reconnection=True, reconnection_attempts=5, reconnection_delay=1)
         self.connected = False
         self.logger = logging.getLogger(__name__)
 
@@ -20,7 +20,17 @@ class socketHandeler():
             self.logger.info(f"Connected to Socket.IO server at {self.sio_url}")
         except Exception as e:
             self.logger.info(f"Failed to connect to Socket.IO: {e}")
+    
+    @self.sio.event
+    def disconnect(self):
+        self.connected = False
+        self.logger.info("Disconnected from Socket.IO server")
 
+    @self.sio.event
+    def reconnect(self):
+        self.connected = True
+        self.logger.info("Reconnected to Socket.IO server")
+    
     def convert_numpy_to_list(self, data):
         """ Convert all numpy arrays in the data to lists for JSON serialization """
         if isinstance(data, np.ndarray):
