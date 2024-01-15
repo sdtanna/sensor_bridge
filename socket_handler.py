@@ -8,8 +8,8 @@ class socketHandeler():
         self.sio_url = 'https://websocket-playground-9faa6ad4da71.herokuapp.com'
         self.sio = socketio.Client(reconnection=True, reconnection_attempts=5, reconnection_delay=1)
         self.connected = False
-        self.sio.on('disconnect', self.handle_disconnect)
-        self.sio.on('reconnect', self.handle_reconnect)
+        self.sio.on('disconnect', self.disconnect)
+        self.sio.on('reconnect', self.reconnect)
         self.logger = logging.getLogger(__name__)
 
 
