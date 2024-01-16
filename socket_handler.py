@@ -11,6 +11,7 @@ class socketHandeler():
         self.sio.on('disconnect', self.disconnect)
         self.sio.on('reconnect', self.reconnect)
         self.logger = logging.getLogger(__name__)
+        print("SocketIO initialized")
 
 
         
@@ -47,6 +48,7 @@ class socketHandeler():
         if self.sio:
             try:
                 self.sio.emit(event, data)
-                self.logger.info("Data sent to Socket.IO server")
+                print("Data sent to Socket.IO server")
             except Exception as e:
-                self.logger.info(f"Error sending data to Socket.IO: {e}")
+
+                print(f"Error sending data to Socket.IO: {e}")
