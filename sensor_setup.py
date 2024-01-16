@@ -18,7 +18,7 @@ class Sensor():
         #Iniitalize socket handler
         #console_logger
         self.logger = logging.getLogger(__name__)
-        
+
         c_handler = logging.StreamHandler()
         c_handler.setLevel(logging.INFO)
         self.logger.addHandler(c_handler)
@@ -82,7 +82,10 @@ class Sensor():
             time.sleep(1)
     def parse_data(self):
         while self.is_running:
-            self.parser.readAndParseUartDoubleCOMPort()
+            try:
+                self.parser.readAndParseUartDoubleCOMPort()
+            except Exception as e:
+                self.logger.error(f"Error reading and parsing UART: {e}")
             time.sleep(1/self.FPS)
 
 
