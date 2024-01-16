@@ -173,7 +173,6 @@ class uartParser():
             outputDict = parseStandardFrame(frameData)
             data = self.socket_handler.convert_numpy_to_list(outputDict)
             self.socket_handler.send_data_to_websocket("sensor_datapacket_1",data)
-            print('sent data')
             
             return outputDict
 
