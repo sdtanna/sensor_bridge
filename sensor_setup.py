@@ -17,6 +17,8 @@ class Sensor():
     def __init__(self):
         #Iniitalize socket handler
         #console_logger
+        self.logger = logging.getLogger(__name__)
+        
         c_handler = logging.StreamHandler()
         c_handler.setLevel(logging.INFO)
         self.logger.addHandler(c_handler)
@@ -35,7 +37,7 @@ class Sensor():
         self.sh.sio.on('command', self.sensor_cmd)
     
 
-        self.logger = logging.getLogger(__name__)
+        
 
         self.is_running = True
 
