@@ -16,10 +16,24 @@ class Sensor():
 
     def __init__(self):
         #Iniitalize socket handler
+        #console_logger
+        c_handler = logging.StreamHandler()
+        c_handler.setLevel(logging.INFO)
+        self.logger.addHandler(c_handler)
+
+        #file_logger
+        f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
+        f_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(f_handler)
+        self.logger.setLevel(logging.INFO)
+        self.logger.info("Logger initialized")
+
         self.sh = socket_handler.socketHandeler()
         self.sh.init_socketIO()
+        self.logger.info("SocketIO initialized")
         # register event handlers for commands from the server
         self.sh.sio.on('command', self.sensor_cmd)
+    
 
         self.logger = logging.getLogger(__name__)
 
@@ -32,28 +46,20 @@ class Sensor():
         #socket logger
         if self.sh.connected:
             s_handler = socket_logger.socket_logger(self.sh)
+            self.logger.info("Socket logger initialized")
+        
             s_handler.setLevel(logging.INFO)
             self.logger.addHandler(s_handler)
 
 
-        #console_logger
-        c_handler = logging.StreamHandler()
-        c_handler.setLevel(logging.INFO)
-        self.logger.addHandler(c_handler)
-
-        #file_logger
-        f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
-        f_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(f_handler)
-        self.logger.setLevel(logging.INFO)
-        self.logger.info("Logger initialized")
+        
         self.logger.info("Initializing Sensor")
 
         self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh, logger= self.logger)
 
         try:
             self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
-            self.logger.info('Connected')
+            self.logger.info('Connected to COM ports')
         except Exception as e:
             self.logger.error(f"Error connecting to COM ports: {e}")
 

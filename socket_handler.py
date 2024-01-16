@@ -47,6 +47,6 @@ class socketHandeler():
         if self.sio:
             try:
                 self.sio.emit(event, data)
-                self.logger.debug("Data sent to Socket.IO server")
+                self.logger.info("Data sent to Socket.IO server")
             except Exception as e:
-                self.logger.error(f"Error sending data to Socket.IO: {e}")
+                self.logger.info(f"Error sending data to Socket.IO: {e}")
