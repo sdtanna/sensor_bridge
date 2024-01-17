@@ -10,9 +10,11 @@ import datetime
 
 # Local File Imports
 from common import *
+import logging
 
 # ================================================== Common Helper Functions ==================================================
-
+logger = logging.getLogger(__name__)
+logger.info("Logger initialized")
 # Convert 3D Spherical Points to Cartesian
 # Assumes sphericalPointCloud is an numpy array with at LEAST 3 dimensions
 # Order should be Range, Elevation, Azimuth
@@ -20,7 +22,7 @@ def sphericalToCartesianPointCloud(sphericalPointCloud):
     shape = sphericalPointCloud.shape
     cartestianPointCloud = sphericalPointCloud.copy() 
     if (shape[1] < 3):
-        print('Error: Failed to convert spherical point cloud to cartesian due to numpy array with too few dimensions')
+        logger.error('Error: Failed to convert spherical point cloud to cartesian due to numpy array with too few dimensions')
         return sphericalPointCloud
 
     # Compute X
@@ -48,7 +50,7 @@ def parsePointCloudTLV(tlvData, tlvLength, pointCloud):
             x, y, z, doppler = struct.unpack(pointStruct, tlvData[:pointStructSize])
         except:
             numPoints = i
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             break
         tlvData = tlvData[pointStructSize:]
         pointCloud[i,0] = x 
@@ -69,7 +71,7 @@ def parsePointCloudExtTLV(tlvData, tlvLength, pointCloud):
     try:
         pUnit = struct.unpack(pUnitStruct, tlvData[:pUnitSize])
     except:
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             return 0, pointCloud
     # Update data pointer
     tlvData = tlvData[pUnitSize:]
@@ -81,7 +83,7 @@ def parsePointCloudExtTLV(tlvData, tlvLength, pointCloud):
             x, y, z, doppler, snr, noise = struct.unpack(pointStruct, tlvData[:pointSize])
         except:
             numPoints = i
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             break
         
         tlvData = tlvData[pointSize:]
@@ -108,7 +110,7 @@ def parseEnhancedPresenceInfoTLV(tlvData, tlvLength):
             zonePresence.append(tlvData[idx] >> (((zoneCount) * 2) % 8) & 3)
             zoneCount = zoneCount + 1
         except:
-            print('Error: Enhanced Presence Detection TLV Parser Failed')
+            logger.error('Error: Enhanced Presence Detection TLV Parser Failed')
             break
     tlvData = tlvData[pointStructSize:]
     return zonePresence
@@ -124,7 +126,7 @@ def parseSideInfoTLV(tlvData, tlvLength, pointCloud):
             snr, noise = struct.unpack(pointStruct, tlvData[:pointStructSize])
         except:
             numPoints = i
-            print('Error: Side Info TLV Parser Failed')
+            logger.error('Error: Side Info TLV Parser Failed')
             break
         tlvData = tlvData[pointStructSize:]
         # SNR and Noise are sent as uint16_t which are measured in 0.1 dB Steps
@@ -145,7 +147,7 @@ def parseRangeProfileTLV(tlvData):
         try:
             rangeBinData = struct.unpack(rangeDataStruct, tlvData[:rangeDataSize])
         except:
-            print(f'Error: Range Profile TLV Parser Failed To Parse Range Bin Number ${i}')
+            logger.error(f'Error: Range Profile TLV Parser Failed To Parse Range Bin Number ${i}')
             break
         rangeProfile.append(rangeBinData[0])
 
@@ -164,8 +166,8 @@ def parseOccStateMachTLV(tlvData):
             # Since the occupied/not occupied flags are individual bits in a uint32, mask out each flag one at a time
             occStateMachOutput[i] = ((occStateMachData[0] & (1 << i)) != 0)
     except Exception as e:
-        print('Error: Occupancy State Machine TLV Parser Failed')
-        print(e)
+        logger.error('Error: Occupancy State Machine TLV Parser Failed')
+        logger.error(e)
         return None
     return occStateMachOutput
 
@@ -181,7 +183,7 @@ def parseSphericalPointCloudTLV(tlvData, tlvLength, pointCloud):
             rng, azimuth, elevation, doppler = struct.unpack(pointStruct, tlvData[:pointStructSize])
         except:
             numPoints = i
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             break
         tlvData = tlvData[pointStructSize:]
         pointCloud[i,0] = rng
@@ -205,7 +207,7 @@ def parseCompressedSphericalPointCloudTLV(tlvData, tlvLength, pointCloud):
     try:
         pUnit = struct.unpack(pUnitStruct, tlvData[:pUnitSize])
     except:
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             return 0, pointCloud
     # Update data pointer
     tlvData = tlvData[pUnitSize:]
@@ -235,7 +237,7 @@ def parseCompressedSphericalPointCloudTLV(tlvData, tlvLength, pointCloud):
             pointCloud[i,4] = snr * pUnit[4]          # SNR
         except:
             numPoints = i
-            print('Error: Point Cloud TLV Parser Failed')
+            logger.error('Error: Point Cloud TLV Parser Failed')
             break
     # Convert from spherical to cartesian
     pointCloud[:,0:3] = sphericalToCartesianPointCloud(pointCloud[:, 0:3])
@@ -270,7 +272,7 @@ def parseTrackTLV(tlvData, tlvLength):
         try:
             targetData = struct.unpack(targetStruct,tlvData[:targetSize])
         except:
-            print('ERROR: Target TLV parsing failed')
+            logger.error('ERROR: Target TLV parsing failed')
             return 0, targets
 
         targets[i,0] = targetData[0] # Target ID
@@ -299,7 +301,7 @@ def parseTrackHeightTLV(tlvData, tlvLength):
         try:
             targetData = struct.unpack(targetStruct,tlvData[i * targetSize:(i + 1) * targetSize])
         except:
-            print('ERROR: Target TLV parsing failed')
+            logger.error('ERROR: Target TLV parsing failed')
             return 0, heights
 
         heights[i,0] = targetData[0] # Target ID
@@ -318,7 +320,7 @@ def parseTargetIndexTLV(tlvData, tlvLength):
         try:
             index = struct.unpack(indexStruct, tlvData[:indexSize])
         except:
-            print('ERROR: Target Index TLV Parsing Failed')
+            logger.error('ERROR: Target Index TLV Parsing Failed')
             return indexes
         indexes[i] = int(index[0])
         tlvData = tlvData[indexSize:]
@@ -342,7 +344,7 @@ def parseVitalSignsTLV (tlvData, tlvLength):
     try:
         vitalsData = struct.unpack(vitalsStruct, tlvData[:vitalsSize])
     except:
-        print('ERROR: Vitals TLV Parsing Failed')
+        logger.error('ERROR: Vitals TLV Parsing Failed')
         return vitalsOutput
     
     # Parse this patient's data
@@ -367,7 +369,7 @@ def parseClassifierTLV(tlvData, tlvLength):
         try:
             classifierProbabilities = struct.unpack(classifierProbabilitiesStruct,tlvData[:classifierProbabilitiesSize])
         except:
-            print('ERROR: Classifier TLV parsing failed')
+            logger.error('ERROR: Classifier TLV parsing failed')
             return 0, probabilities
         
         for j in range(NUM_CLASSES_IN_CLASSIFIER):
@@ -386,7 +388,7 @@ def parseGestureFeaturesTLV(tlvData):
         wtDoppler, wtDopplerPos, wtDopplerNeg, wtRange, numDetections, wtAzimuthMean, wtElevMean, azDoppCorr, wtAzimuthStd, wtdElevStd = struct.unpack(featuresStruct, tlvData[:featuresStructSize])
         gesturefeatures = [wtDoppler, wtDopplerPos, wtDopplerNeg, wtRange, numDetections, wtAzimuthMean, wtElevMean, azDoppCorr, wtAzimuthStd, wtdElevStd]
     except:
-        print('Error: Gesture Features TLV Parser Failed')
+        logger.error('Error: Gesture Features TLV Parser Failed')
         return None
 
     return gesturefeatures
@@ -399,7 +401,7 @@ def parseGestureProbTLV6843(tlvData):
     try:
         annOutputProb = struct.unpack(probStruct, tlvData[:probStructSize])
     except:
-        print('Error: ANN Probabilities TLV Parser Failed')
+        logger.error('Error: ANN Probabilities TLV Parser Failed')
         return None
 
     return annOutputProb
@@ -413,7 +415,7 @@ def parseGestureFeaturesTLV6432(tlvData):
     try:
         gestureFeatures = struct.unpack(featuresStruct, tlvData[:featuresStructSize])
     except:
-        print('Error: Gesture Features TLV Parser Failed')
+        logger.error('Error: Gesture Features TLV Parser Failed')
         return None
     
     return gestureFeatures
@@ -427,7 +429,7 @@ def parseGestureClassifierTLV6432(tlvData):
     try:
         classifier_result = struct.unpack(classifierStruct, tlvData[:classifierStructSize])
     except:
-        print('Error: Classifier Result TLV Parser Failed')
+        logger.error('Error: Classifier Result TLV Parser Failed')
         return None
 
     return classifier_result[0]
@@ -440,7 +442,7 @@ def parseSurfaceClassificationTLV(tlvData):
     try:
         classifier_result = struct.unpack(classifierStruct, tlvData[:classifierStructSize])
     except:
-        print('Error: Classifier Result TLV Parser Failed')
+        logger.error('Error: Classifier Result TLV Parser Failed')
         return None
 
     return classifier_result[0]
@@ -453,9 +455,9 @@ def parseSurfaceClassificationTLV(tlvData):
 
 #     try:
 #         presence_result = struct.unpack(presenceStruct, tlvData[:presenceStructSize])
-#         print(presence_result)
+#         logger.info(presence_result)
 #     except:
-#         print('Error: Gesture Presence Result TLV Parser Failed')
+#         logger.error('Error: Gesture Presence Result TLV Parser Failed')
 #         return None
 
 #     return presence_result[0]
@@ -469,7 +471,7 @@ def parseExtStatsTLV(tlvData, tlvLength):
         power1v2, power1v2RF, tempRx, tempTx, tempPM, tempDIG = \
         struct.unpack(extStatsStruct, tlvData[:extStatsStructSize])
     except:
-            print('Error: Ext Stats Parser Failed')
+            logger.info('Error: Ext Stats Parser Failed')
             return 0
 
     tlvData = tlvData[extStatsStructSize:]
@@ -477,7 +479,7 @@ def parseExtStatsTLV(tlvData, tlvLength):
     procTimeData = {}
     powerData = {}
     tempData = {}
-    # print("IFPT : " + str(interFrameProcTime))
+    # logger.info("IFPT : " + str(interFrameProcTime))
 
     procTimeData['interFrameProcTime'] = interFrameProcTime
     procTimeData['transmitOutTime'] = transmitOutTime
@@ -502,9 +504,9 @@ def parseRXChanCompTLV(tlvData, tlvLength):
     try:
         coefficients = struct.unpack(compStruct, tlvData[:compSize])
     except:
-        print('ERROR: RX Channel Comp TLV Parsing Failed')
+        logger.error('ERROR: RX Channel Comp TLV Parsing Failed')
     # Print results to the terminal output
-    print("compRangeBiasAndRxChanPhase", end=" ")
+    logger.info("compRangeBiasAndRxChanPhase", end=" ")
     for i in range(13):
-        print(f'{coefficients[i]:0.4f}', end=" ")
-    print('\n')
+        logger.info(f'{coefficients[i]:0.4f}', end=" ")
+    logger.info('\n')

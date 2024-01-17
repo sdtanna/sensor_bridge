@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from threading import Thread
 import socket_logger
+import signal
 import atexit
 
 class Sensor():
@@ -36,28 +37,15 @@ class Sensor():
         # register event handlers for commands from the server
         self.sh.sio.on('command', self.sensor_cmd)
     
-
-        
-
         self.is_running = True
 
         atexit.register(self.sensor_stop)
+        signal.signal(signal.SIGINT, self.sensor_stop)
+        signal.signal(signal.SIGTERM, self.sensor_stop)
 
-        
-
-        #socket logger
-        if self.sh.connected:
-            s_handler = socket_logger.socket_logger(self.sh)
-            self.logger.info("Socket logger initialized")
-        
-            s_handler.setLevel(logging.INFO)
-            self.logger.addHandler(s_handler)
-
-
-        
         self.logger.info("Initializing Sensor")
 
-        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh, logger= self.logger)
+        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh)
 
         try:
             self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
@@ -113,9 +101,8 @@ class Sensor():
         else:
             # Code to handle other commands
             print(f"Received command: {command}")
-
-
-        # You can add more elif blocks for other specific commands if needed
+    
+            
 
     # sensor_response
 if __name__ == "__main__":
