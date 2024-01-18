@@ -3,6 +3,7 @@ from parser import uartParser
 import time
 import socket_handler as socket_handler 
 import logging
+import logging.config
 from datetime import datetime
 from threading import Thread
 import socket_logger
@@ -18,6 +19,7 @@ class Sensor():
     def __init__(self):
         #Iniitalize socket handler
         #console_logger
+        logging.config.fileConfig('logging.conf')
         self.logger = logging.getLogger(__name__)
 
         c_handler = logging.StreamHandler()
@@ -100,7 +102,7 @@ class Sensor():
             self.parser.sendCfg(self.cfg)
         else:
             # Code to handle other commands
-            print(f"Received command: {command}")
+            self.logger.info(f"Received command: {command}")
     
             
 

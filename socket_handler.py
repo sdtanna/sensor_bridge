@@ -1,7 +1,8 @@
+import logging
 import json
 import socketio
 import numpy as np
-import logging
+
 
 class socketHandeler():
     def __init__(self):
@@ -11,7 +12,7 @@ class socketHandeler():
         self.sio.on('disconnect', self.disconnect)
         self.sio.on('reconnect', self.reconnect)
         self.logger = logging.getLogger(__name__)
-        print("SocketIO initialized")
+        self.logger.info("SocketIO initialized")
 
 
         
@@ -48,7 +49,7 @@ class socketHandeler():
         if self.sio:
             try:
                 self.sio.emit(event, data)
-                print("Data sent to Socket.IO server")
+                self.logger.info("Data sent to Socket.IO server")
             except Exception as e:
 
-                print(f"Error sending data to Socket.IO: {e}")
+                self.logger.info(f"Error sending data to Socket.IO: {e}")
