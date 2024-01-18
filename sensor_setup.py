@@ -21,16 +21,6 @@ class Sensor():
         #console_logger
         logging.config.fileConfig('logging.conf')
         self.logger = logging.getLogger(__name__)
-
-        c_handler = logging.StreamHandler()
-        c_handler.setLevel(logging.INFO)
-        self.logger.addHandler(c_handler)
-
-        #file_logger
-        f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
-        f_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(f_handler)
-        self.logger.setLevel(logging.INFO)
         self.logger.info("Logger initialized")
 
         self.sh = socket_handler.socketHandeler()
