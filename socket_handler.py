@@ -6,13 +6,14 @@ import numpy as np
 
 class socketHandeler():
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("SocketIO initialized")
         self.sio_url = 'https://websocket-playground-9faa6ad4da71.herokuapp.com'
-        self.sio = socketio.Client(reconnection=True, reconnection_attempts=5, reconnection_delay=1)
+        self.sio = socketio.Client(reconnection=True, reconnection_attempts=0, reconnection_delay=1, logger= self.logger)
         self.connected = False
         self.sio.on('disconnect', self.disconnect)
         self.sio.on('reconnect', self.reconnect)
-        self.logger = logging.getLogger(__name__)
-        self.logger.info("SocketIO initialized")
+
 
 
         
@@ -29,7 +30,7 @@ class socketHandeler():
         self.connected = False
         self.logger.info("Disconnected from Socket.IO server")
         self.logger.info("Attempting to reconnect...")
-        self.init_socketIO()
+
 
 
     def reconnect(self):
