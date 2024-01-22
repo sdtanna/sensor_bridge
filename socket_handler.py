@@ -28,6 +28,9 @@ class socketHandeler():
     def disconnect(self):
         self.connected = False
         self.logger.info("Disconnected from Socket.IO server")
+        self.logger.info("Attempting to reconnect...")
+        self.init_socketIO()
+
 
     def reconnect(self):
         self.connected = True
