@@ -1,17 +1,19 @@
+import logging
 import json
 import socketio
 import numpy as np
-import logging
+
 
 class socketHandeler():
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("SocketIO initialized")
         self.sio_url = 'https://websocket-playground-9faa6ad4da71.herokuapp.com'
-        self.sio = socketio.Client(reconnection=True, reconnection_attempts=5, reconnection_delay=1)
+        self.sio = socketio.Client(reconnection=True, reconnection_attempts=0, reconnection_delay=1)
         self.connected = False
         self.sio.on('disconnect', self.disconnect)
         self.sio.on('reconnect', self.reconnect)
-        self.logger = logging.getLogger(__name__)
-        print("SocketIO initialized")
+
 
 
         
@@ -27,6 +29,9 @@ class socketHandeler():
     def disconnect(self):
         self.connected = False
         self.logger.info("Disconnected from Socket.IO server")
+        self.logger.info("Attempting to reconnect...")
+
+
 
     def reconnect(self):
         self.connected = True
@@ -48,7 +53,7 @@ class socketHandeler():
         if self.sio:
             try:
                 self.sio.emit(event, data)
-                print("Data sent to Socket.IO server")
+                self.logger.debug("Data sent to Socket.IO server")
             except Exception as e:
 
-                print(f"Error sending data to Socket.IO: {e}")
+                self.logger.error(f"Error sending data to Socket.IO: {e}")

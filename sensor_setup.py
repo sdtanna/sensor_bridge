@@ -3,9 +3,11 @@ from parser import uartParser
 import time
 import socket_handler as socket_handler 
 import logging
+import logging.config
 from datetime import datetime
 from threading import Thread
 import socket_logger
+import signal
 import atexit
 
 class Sensor():
@@ -17,17 +19,8 @@ class Sensor():
     def __init__(self):
         #Iniitalize socket handler
         #console_logger
+        logging.config.fileConfig('logging.conf')
         self.logger = logging.getLogger(__name__)
-
-        c_handler = logging.StreamHandler()
-        c_handler.setLevel(logging.INFO)
-        self.logger.addHandler(c_handler)
-
-        #file_logger
-        f_handler = logging.FileHandler('{:%Y-%m-%d}_sensor_setup.log'.format(datetime.now()))
-        f_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(f_handler)
-        self.logger.setLevel(logging.INFO)
         self.logger.info("Logger initialized")
 
         self.sh = socket_handler.socketHandeler()
@@ -36,28 +29,15 @@ class Sensor():
         # register event handlers for commands from the server
         self.sh.sio.on('command', self.sensor_cmd)
     
-
-        
-
         self.is_running = True
 
         atexit.register(self.sensor_stop)
+        signal.signal(signal.SIGINT, self.sensor_stop)
+        signal.signal(signal.SIGTERM, self.sensor_stop)
 
-        
-
-        #socket logger
-        if self.sh.connected:
-            s_handler = socket_logger.socket_logger(self.sh)
-            self.logger.info("Socket logger initialized")
-        
-            s_handler.setLevel(logging.INFO)
-            self.logger.addHandler(s_handler)
-
-
-        
         self.logger.info("Initializing Sensor")
 
-        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh, logger= self.logger)
+        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh)
 
         try:
             self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
@@ -75,11 +55,9 @@ class Sensor():
         self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
-        parser_thread = Thread(target=self.parse_data, daemon=True)
+        parser_thread = Thread(target=self.parse_data)
         parser_thread.start()
-        while True:
-            logging.debug("running")
-            time.sleep(1)
+        parser_thread.join()
     def parse_data(self):
         while self.is_running:
             try:
@@ -89,10 +67,14 @@ class Sensor():
             time.sleep(1/self.FPS)
 
 
-    def sensor_stop(self):
+    def sensor_stop(self, signum=None, frame=None):
+        self.is_running = False
+        self.sh.sio.disconnect()
         self.logger.info("Stopping Sensor")
         self.parser.sendLine("resetDevice\n")
         self.logger.info("Sensor Stopped")
+        
+        
 
     def sensor_cmd(self, data):
         command = data['data']
@@ -112,10 +94,9 @@ class Sensor():
             self.parser.sendCfg(self.cfg)
         else:
             # Code to handle other commands
-            print(f"Received command: {command}")
-
-
-        # You can add more elif blocks for other specific commands if needed
+            self.logger.info(f"Received command: {command}")
+    
+            
 
     # sensor_response
 if __name__ == "__main__":
