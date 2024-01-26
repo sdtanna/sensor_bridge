@@ -98,52 +98,7 @@ class uartParser():
         except Exception as e:
             self.logger.error(f"Error parsing frame: {e}")
 
-    def readAndParseUartDoubleCOMPort(self):
-        self.fail = 0
-        if self.replay:
-            return self.replayHist()
-
-        # Magic word detection
-        magicWordLength = len(UART_MAGIC_WORD)
-        foundMagicWord = False
-        magicWordBuffer = bytearray(magicWordLength)
-
-        while not foundMagicWord:
-            byte = self.dataCom.read(1)
-
-            if len(byte) < 1:
-                continue
-
-            magicWordBuffer.pop(0)
-            magicWordBuffer.append(byte[0])
-
-            if bytes(magicWordBuffer) == UART_MAGIC_WORD:
-                foundMagicWord = True
-
-        frameData = bytearray(magicWordBuffer)
-
-        # Read version and length
-        frameData += self.dataCom.read(8)
-        frameLength = int.from_bytes(frameData[-4:], byteorder='little')
-
-        # Read the rest of the frame
-        frameLength -= 16  # Adjust for the already read bytes
-        frameData += self.dataCom.read(frameLength)
-
-        # Parse frame data
-        try:
-            if self.parserType == "DoubleCOMPort":
-                outputDict = parseStandardFrame(frameData)
-            else:
-                self.logger.error('FAILURE: Bad parserType')
-                return
-
-            data = self.socket_handler.convert_numpy_to_list(outputDict)
-            self.socket_handler.send_data_to_websocket("sensor_datapacket_1", data)
-
-            return outputDict
-        except Exception as e:
-            self.logger.error(f"Error parsing frame: {e}")
+   
             
   
     # Find various utility functions here for connecting to COM Ports, send data, etc...

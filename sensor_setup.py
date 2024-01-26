@@ -55,11 +55,9 @@ class Sensor():
         self.parser.sendCfg(self.cfg)
 
         self.logger.info("entering main loop")
-        parser_thread = Thread(target=self.parse_data, daemon=True)
+        parser_thread = Thread(target=self.parse_data)
         parser_thread.start()
-        while True:
-            logging.debug("running")
-            time.sleep(1)
+        parser_thread.join()
     def parse_data(self):
         while self.is_running:
             try:
@@ -69,10 +67,14 @@ class Sensor():
             time.sleep(1/self.FPS)
 
 
-    def sensor_stop(self):
+    def sensor_stop(self, signum=None, frame=None):
+        self.is_running = False
+        self.sh.sio.disconnect()
         self.logger.info("Stopping Sensor")
         self.parser.sendLine("resetDevice\n")
         self.logger.info("Sensor Stopped")
+        
+        
 
     def sensor_cmd(self, data):
         command = data['data']
