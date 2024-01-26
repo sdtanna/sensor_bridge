@@ -92,6 +92,9 @@ class Sensor():
         
         elif command == 'cfg':
             self.parser.sendCfg(self.cfg)
+
+        elif command == 'restartSensor':
+            self.logger.info(f"RESTARTED")
         else:
             # Code to handle other commands
             self.logger.info(f"Received command: {command}")
