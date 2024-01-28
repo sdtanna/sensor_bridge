@@ -77,12 +77,12 @@ class Sensor():
     
     def restartSensor(self):
         # Turn off power to all USB ports
-        os.system("sudo ./hub-ctrl -h 0 -P 2 -p 0")
+        os.system("sudo uhubctl -l 1-1 -p 2 -a 0")
         self.logger.info(f"Restarting, Eliminating Power to Sensor")
         # Wait for 10 seconds
         time.sleep(10)
         # Turn power back on
-        os.system("sudo ./hub-ctrl -h 0 -P 2 -p 1")
+        os.system("sudo uhubctl -l 1-1 -p 2 -a 1")
         self.logger.info(f"Restart Complete, Power Re-Initiated")
         
 
