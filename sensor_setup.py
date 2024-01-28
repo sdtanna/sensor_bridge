@@ -31,6 +31,7 @@ class Sensor():
         self.sh.sio.on('command', self.sensor_cmd)
     
         self.is_running = True
+        self.sensor_powered = True  # Add a state variable for the sensor's power state
 
         atexit.register(self.sensor_stop)
         signal.signal(signal.SIGINT, self.sensor_stop)
@@ -76,6 +77,7 @@ class Sensor():
         self.logger.info("Sensor Stopped")
     
     def restartSensor(self):
+        self.sensor_powered = False  # Update the state variable
         # Turn off power to all USB ports
         os.system("sudo uhubctl -l 1-1 -p 2 -a 0")
         self.logger.info(f"Restarting, Eliminating Power to Sensor")
@@ -84,6 +86,7 @@ class Sensor():
         # Turn power back on
         os.system("sudo uhubctl -l 1-1 -p 2 -a 1")
         self.logger.info(f"Restart Complete, Power Re-Initiated")
+        self.sensor_powered = True  # Update the state variable
         
 
     def sensor_cmd(self, data):
