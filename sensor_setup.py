@@ -101,11 +101,18 @@ class Sensor():
         time.sleep(5)  # Wait for the sensor to be ready
         self.logger.info("5 Seconds Left")
 
+        # Wait for the device file to appear
+        while not os.path.exists('/dev/ttyUSB0'):
+            time.sleep(1)
+
         # Close and reopen the serial connection
         self.logger.info("Resetting Serial Connection")
-        self.parser.cliCom.close()
-        self.parser.dataCom.close()
-        self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
+        try:
+            self.parser.cliCom.close()
+            self.parser.dataCom.close()
+            self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
+        except Exception as e:
+            self.logger.error(f"Error reinitializing serial connection: {e}")
         time.sleep(5)
         self.logger.info("Serial Connection Reset")
 
