@@ -82,10 +82,15 @@ class Sensor():
     def restartSensor(self):
         self.sensor_powered = False  # Set sensor_powered to False before turning off power
         # Turn off power to USB port
+        self.logger.info("Beginning Restart")
         subprocess.run(['sudo', 'uhubctl', '-l', '1-1', '-p', '2', '-a', '0'])
-        time.sleep(10)  # Wait for 10 seconds
+        time.sleep(5)
+        self.logger.info("5 Seconds Left")
+        time.sleep(5)
+        self.logger.info("Restart Complete")
         # Turn power back on
         subprocess.run(['sudo', 'uhubctl', '-l', '1-1', '-p', '2', '-a', '1'])
+        self.logger.info("Power Re-Initialized")
         self.sensor_powered = True  # Set sensor_powered back to True after turning power back on
         
 
