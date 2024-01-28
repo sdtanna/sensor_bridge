@@ -9,6 +9,7 @@ from threading import Thread
 import socket_logger
 import signal
 import atexit
+import os
 
 class Sensor():
         
@@ -73,7 +74,16 @@ class Sensor():
         self.logger.info("Stopping Sensor")
         self.parser.sendLine("resetDevice\n")
         self.logger.info("Sensor Stopped")
-        
+    
+    def restartSensor(self):
+        # Turn off power to all USB ports
+        os.system("sudo ./hub-ctrl -h 0 -P 2 -p 0")
+        self.logger.info(f"Restarting, Eliminating Power to Sensor")
+        # Wait for 10 seconds
+        time.sleep(10)
+        # Turn power back on
+        os.system("sudo ./hub-ctrl -h 0 -P 2 -p 1")
+        self.logger.info(f"Restart Complete, Power Re-Initiated")
         
 
     def sensor_cmd(self, data):
@@ -94,7 +104,7 @@ class Sensor():
             self.parser.sendCfg(self.cfg)
 
         elif command == 'restartSensor':
-            self.logger.info(f"RESTARTED")
+            self.restartSensor()
         else:
             # Code to handle other commands
             self.logger.info(f"Received command: {command}")
