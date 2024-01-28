@@ -10,6 +10,7 @@ import socket_logger
 import signal
 import atexit
 import os
+import subprocess
 
 class Sensor():
         
@@ -60,12 +61,14 @@ class Sensor():
         parser_thread = Thread(target=self.parse_data)
         parser_thread.start()
         parser_thread.join()
+
     def parse_data(self):
         while self.is_running:
-            try:
-                self.parser.readAndParseUartDoubleCOMPort()
-            except Exception as e:
-                self.logger.error(f"Error reading and parsing UART: {e}")
+            if self.sensor_powered:  # Only read from UART if sensor is powered
+                try:
+                    self.parser.readAndParseUartDoubleCOMPort()
+                except Exception as e:
+                    self.logger.error(f"Error reading and parsing UART: {e}")
             time.sleep(1/self.FPS)
 
 
@@ -77,16 +80,13 @@ class Sensor():
         self.logger.info("Sensor Stopped")
     
     def restartSensor(self):
-        self.sensor_powered = False  # Update the state variable
-        # Turn off power to all USB ports
-        os.system("sudo uhubctl -l 1-1 -p 2 -a 0")
-        self.logger.info(f"Restarting, Eliminating Power to Sensor")
-        # Wait for 10 seconds
-        time.sleep(10)
+        self.sensor_powered = False  # Set sensor_powered to False before turning off power
+        # Turn off power to USB port
+        subprocess.run(['uhubctl', '-l', '1-1', '-p', '2', '-a', '0'])
+        time.sleep(10)  # Wait for 10 seconds
         # Turn power back on
-        os.system("sudo uhubctl -l 1-1 -p 2 -a 1")
-        self.logger.info(f"Restart Complete, Power Re-Initiated")
-        self.sensor_powered = True  # Update the state variable
+        subprocess.run(['uhubctl', '-l', '1-1', '-p', '2', '-a', '1'])
+        self.sensor_powered = True  # Set sensor_powered back to True after turning power back on
         
 
     def sensor_cmd(self, data):
@@ -118,4 +118,3 @@ class Sensor():
 if __name__ == "__main__":
     sensor = Sensor()
     sensor.start()
-

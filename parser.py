@@ -52,9 +52,6 @@ class uartParser():
         
     
     def readAndParseUartDoubleCOMPort(self):
-        if not self.sensor_powered:
-            return
-        
         self.fail = 0
         if self.replay:
             return self.replayHist()
