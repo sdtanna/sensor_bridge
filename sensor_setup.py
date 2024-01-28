@@ -114,7 +114,8 @@ class Sensor():
         # self.logger.info("Serial Connection Reset")
 
         self.logger.info("Starting the Sensor Up")
-        self.start()    #Start up the Sensor again
+        #self.start()    #Start up the Sensor again
+        self.sensor_cmd({'data': 'startSensor'})  # Stop the sensor
         self.logger.info("Sensor Restart Completed SUCCESSFULLY")
         self.sensor_powered = True  # Set sensor_powered back to True after turning power back on to allow UART reading
 
