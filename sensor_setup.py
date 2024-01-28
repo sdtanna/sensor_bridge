@@ -102,24 +102,16 @@ class Sensor():
         self.logger.info("5 Seconds Left")
         time.sleep(5)
 
-        self.logger.info("Waiting for Device File to Appear")
-        # Wait for the device file to appear
-        # Wait for the device file to appear
-        while not (os.path.exists('/dev/ttyUSB0') or os.path.exists('/dev/ttyUSB1')):
-            time.sleep(1)
-
-        self.logger.info("Device File FOUND!")
-        
-        # Close and reopen the serial connection
-        self.logger.info("Resetting Serial Connection")
-        try:
-            self.parser.cliCom.close()
-            self.parser.dataCom.close()
-            self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
-        except Exception as e:
-            self.logger.error(f"Error reinitializing serial connection: {e}")
-        time.sleep(5)
-        self.logger.info("Serial Connection Reset")
+        # # Close and reopen the serial connection
+        # self.logger.info("Resetting Serial Connection")
+        # try:
+        #     self.parser.cliCom.close()
+        #     self.parser.dataCom.close()
+        #     self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
+        # except Exception as e:
+        #     self.logger.error(f"Error reinitializing serial connection: {e}")
+        # time.sleep(5)
+        # self.logger.info("Serial Connection Reset")
 
         self.logger.info("Starting the Sensor Up")
         self.start()    #Start up the Sensor again
