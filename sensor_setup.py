@@ -100,11 +100,16 @@ class Sensor():
         self.logger.info("10 Seconds Left")
         time.sleep(5)  # Wait for the sensor to be ready
         self.logger.info("5 Seconds Left")
+        time.sleep(5)
 
+        self.logger.info("Waiting for Device File to Appear")
         # Wait for the device file to appear
-        while not os.path.exists('/dev/ttyUSB0'):
+        # Wait for the device file to appear
+        while not (os.path.exists('/dev/ttyUSB0') or os.path.exists('/dev/ttyUSB1')):
             time.sleep(1)
 
+        self.logger.info("Device File FOUND!")
+        
         # Close and reopen the serial connection
         self.logger.info("Resetting Serial Connection")
         try:
