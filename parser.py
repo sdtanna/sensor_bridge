@@ -112,40 +112,35 @@ class uartParser():
     
     #send cfg over uart
     def sendCfg(self, cfg):
-        # Ensure each line ends in \n for proper parsing
         for i, line in enumerate(cfg):
-            # Remove empty lines from cfg
             if(line == '\n'):
                 cfg.remove(line)
-            # add a newline to the end of every line (protects against last line not having a newline at the end of it)
             elif(line[-1] != '\n'):
                 cfg[i] = cfg[i] + '\n'
-
         for line in cfg:
             time.sleep(.1) # Line delay
-
-            if(self.cliCom.baudrate == 1250000):
-                for char in [*line]:
-                    time.sleep(.01) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
-                    self.cliCom.write(char.encode())
-            else:
-                self.cliCom.write(line.encode())
-                
-            ack = self.cliCom.readline()
-            self.logger.info(ack)
-            ack = self.cliCom.readline()
-            self.logger.info(ack)
-            splitLine = line.split()
-            if(splitLine[0] == "baudRate"): # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
-                try:
-                    self.cliCom.baudrate = int(splitLine[1])
-                except:
-                    self.logger.error("Invalid baud rate")
-                    sys.exit(1)
-        # Give a short amount of time for the buffer to clear
+            try:
+                if(self.cliCom.baudrate == 1250000):
+                    for char in [*line]:
+                        time.sleep(.01) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
+                        self.cliCom.write(char.encode())
+                else:
+                    self.cliCom.write(line.encode())
+                ack = self.cliCom.readline()
+                self.logger.info(ack)
+                ack = self.cliCom.readline()
+                self.logger.info(ack)
+                splitLine = line.split()
+                if(splitLine[0] == "baudRate"): # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
+                    try:
+                        self.cliCom.baudrate = int(splitLine[1])
+                    except:
+                        self.logger.error("Invalid baud rate")
+                        sys.exit(1)
+            except Exception as e:
+                self.logger.error(f"Error in sendCfg loop: {e}")
         time.sleep(0.1)
         self.cliCom.reset_input_buffer()
-        # NOTE - Do NOT close the CLI port because 6432 will use it after configuration
 
 
     #send single command to device over UART Com.

@@ -50,13 +50,13 @@ class Sensor():
 
     def start(self):
         self.logger.info("Starting Sensor")
-        
-        
         with open("ISK_6m_default.cfg", 'r') as cfg_file:
-                self.cfg = cfg_file.readlines()
+            self.cfg = cfg_file.readlines()
         self.logger.info("sending cfg")
-        self.parser.sendCfg(self.cfg)
-
+        try:
+            self.parser.sendCfg(self.cfg)
+        except Exception as e:
+            self.logger.error(f"Error in sendCfg: {e}")
         self.logger.info("entering main loop")
         parser_thread = Thread(target=self.parse_data)
         parser_thread.start()
@@ -85,38 +85,19 @@ class Sensor():
         # Turn off power to USB port
         self.logger.info("Beginning Restart")
         time.sleep(2)   #Ensure Sensor is stopped
-        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'])
-        self.logger.info("5 Seconds Left")
+        result = subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'], capture_output=True)
+        self.logger.info(f"Power off result: {result.stdout}, {result.stderr}")
         time.sleep(5)
-        self.logger.info("Reboot Complete")
         # Turn power back on
-        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'])
-        self.logger.info("Power Re-Initialized, Please Wait")
-        
-        self.logger.info("30 Seconds Left")
+        result = subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'], capture_output=True)
+        self.logger.info(f"Power on result: {result.stdout}, {result.stderr}")
         time.sleep(10)  # Wait for the sensor to be ready
-        self.logger.info("20 Seconds Left")
-        time.sleep(10)  # Wait for the sensor to be ready
-        self.logger.info("10 Seconds Left")
-        time.sleep(5)  # Wait for the sensor to be ready
-        self.logger.info("5 Seconds Left")
-        time.sleep(5)
-
-        # # Close and reopen the serial connection
-        # self.logger.info("Resetting Serial Connection")
-        # try:
-        #     self.parser.cliCom.close()
-        #     self.parser.dataCom.close()
-        #     self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
-        # except Exception as e:
-        #     self.logger.error(f"Error reinitializing serial connection: {e}")
-        # time.sleep(5)
-        # self.logger.info("Serial Connection Reset")
-
         self.logger.info("Starting the Sensor Up")
-        self.start()    #Start up the Sensor again
-        #self.sensor_cmd({'data': 'startSensor'})  # Stop the sensor
-        self.logger.info("Sensor Restart Completed SUCCESSFULLY")
+        try:
+            self.start()    #Start up the Sensor again
+        except Exception as e:
+            self.logger.error(f"Error in start: {e}")
+        self.logger.info("Sensor Restart Completed")
         self.sensor_powered = True  # Set sensor_powered back to True after turning power back on to allow UART reading
 
     def sensor_cmd(self, data):
