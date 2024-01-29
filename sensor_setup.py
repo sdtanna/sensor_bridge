@@ -48,6 +48,18 @@ class Sensor():
         except Exception as e:
             self.logger.error(f"Error connecting to COM ports: {e}")
 
+    def initialize_sensor(self):
+        self.logger.info("Initializing Sensor")
+        self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh)
+        self.connect_com_ports()
+
+    def connect_com_ports(self):
+        try:
+            self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)
+            self.logger.info('Connected to COM ports')
+        except Exception as e:
+            self.logger.error(f"Error connecting to COM ports: {e}")
+
     def start(self):
         self.logger.info("Starting Sensor")
         with open("ISK_6m_default.cfg", 'r') as cfg_file:
@@ -92,12 +104,10 @@ class Sensor():
         result = subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'], capture_output=True)
         self.logger.info(f"Power on result: {result.stdout}, {result.stderr}")
         time.sleep(10)  # Wait for the sensor to be ready
-        self.logger.info("Starting the Sensor Up")
-        try:
-            self.start()    #Start up the Sensor again
-        except Exception as e:
-            self.logger.error(f"Error in start: {e}")
-        self.logger.info("Sensor Restart Completed")
+
+        self.initialize_sensor()  # Reinitialize the sensor
+        self.start()  # Start the sensor
+
         self.sensor_powered = True  # Set sensor_powered back to True after turning power back on to allow UART reading
 
     def sensor_cmd(self, data):
