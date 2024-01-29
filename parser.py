@@ -28,7 +28,7 @@ from parseFrame import *
 # Then call readAndParseUart() to read one frame of data from the device. The gui this is packaged with calls this every frame period.
 # readAndParseUart() will return all radar detection and tracking information.
 class uartParser():
-    def __init__(self,type='SDK Out of Box Demo', socket_handler = None):
+    def __init__(self, cliCom, dataCom, type='SDK Out of Box Demo', socket_handler = None):
         # Set this option to 1 to save UART output from the radar device
         self.socket_handler = socket_handler
         self.saveBinary = 0
@@ -46,6 +46,10 @@ class uartParser():
 
         # Data storage
         self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')      
+
+        # Initialize cliCom and dataCom
+        self.cliCom = cliCom
+        self.dataCom = dataCom      
     
     def readAndParseUartDoubleCOMPort(self):
         self.fail = 0
