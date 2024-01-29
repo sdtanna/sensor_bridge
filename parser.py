@@ -41,16 +41,11 @@ class uartParser():
         self.logger = logging.getLogger(__name__)
         self.logger.info("Logger initialized")
 
-
         self.filepath = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-
-            
-        
         self.parserType = "DoubleCOMPort"
 
         # Data storage
-        self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')
-        
+        self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')      
     
     def readAndParseUartDoubleCOMPort(self):
         self.fail = 0
@@ -99,9 +94,6 @@ class uartParser():
         except Exception as e:
             self.logger.error(f"Error parsing frame: {e}")
 
-   
-            
-  
     # Find various utility functions here for connecting to COM Ports, send data, etc...
     # Connect to com ports
     # Call this function to connect to the comport. This takes arguments self (intrinsic), cliCom, and dataCom. No return, but sets internal variables in the parser object.
@@ -134,6 +126,7 @@ class uartParser():
             except Exception as e:
                 self.logger.error(f"Error connecting to COM ports: {e}")
                 time.sleep(2)  # Wait for 2 seconds before retrying
+
 
     def reconnect(self):
         self.cliCom.close()

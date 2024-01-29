@@ -52,6 +52,7 @@ class Sensor():
     def initialize_sensor(self):
         self.logger.info("Initializing Sensor")
         self.parser = uartParser(type="3D People Tracking", socket_handler = self.sh)
+        time.sleep(10)  # Wait for the sensor to be ready
         self.parser.connectComPorts(self.CLI_COM_PORT, self.DATA_COM_PORT)  # Call connect_com_ports on the new parser object
 
     def connect_com_ports(self):
