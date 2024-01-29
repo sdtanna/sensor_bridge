@@ -30,7 +30,8 @@ class Sensor():
         self.logger.info("SocketIO initialized")
         # register event handlers for commands from the server
         self.sh.sio.on('command', self.sensor_cmd)
-    
+
+        self.initialize_sensor()
         self.is_running = True
         self.sensor_powered = True  # Add a state variable for the sensor's power state
 
