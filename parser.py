@@ -116,16 +116,24 @@ class uartParser():
             return True
         
     def connectComPorts(self, cliCom, dataCom):
-        if not self.check_com_port(cliCom):
-            self.logger.error(f"Cannot connect to {cliCom} because it's being used by another process.")
-            return
-        if not self.check_com_port(dataCom):
-            self.logger.error(f"Cannot connect to {dataCom} because it's being used by another process.")
-            return
-        self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
-        self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
-        self.dataCom.reset_output_buffer()
-        self.logger.info('Connected')
+        for _ in range(5):  # Retry up to 5 times
+            if not self.check_com_port(cliCom):
+                self.logger.error(f"Cannot connect to {cliCom} because it's being used by another process.")
+                time.sleep(2)  # Wait for 2 seconds before retrying
+                continue
+            if not self.check_com_port(dataCom):
+                self.logger.error(f"Cannot connect to {dataCom} because it's being used by another process.")
+                time.sleep(2)  # Wait for 2 seconds before retrying
+                continue
+            try:
+                self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
+                self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
+                self.dataCom.reset_output_buffer()
+                self.logger.info('Connected')
+                break  # If connection is successful, break the loop
+            except Exception as e:
+                self.logger.error(f"Error connecting to COM ports: {e}")
+                time.sleep(2)  # Wait for 2 seconds before retrying
 
     def reconnect(self):
         self.cliCom.close()
