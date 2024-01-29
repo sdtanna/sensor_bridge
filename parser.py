@@ -8,6 +8,7 @@ import time
 import numpy as np
 import math
 import datetime
+import subprocess
 
 
  
@@ -104,12 +105,33 @@ class uartParser():
     # Find various utility functions here for connecting to COM Ports, send data, etc...
     # Connect to com ports
     # Call this function to connect to the comport. This takes arguments self (intrinsic), cliCom, and dataCom. No return, but sets internal variables in the parser object.
+    def check_com_port(self, port):
+        result = subprocess.run(['lsof', port], capture_output=True, text=True)
+        if result.stdout:
+            self.logger.info(f"The {port} is being used by the following process(es):")
+            self.logger.info(result.stdout)
+            return False
+        else:
+            self.logger.info(f"The {port} is not being used by any process.")
+            return True
+        
     def connectComPorts(self, cliCom, dataCom):
+        if not self.check_com_port(cliCom):
+            self.logger.error(f"Cannot connect to {cliCom} because it's being used by another process.")
+            return
+        if not self.check_com_port(dataCom):
+            self.logger.error(f"Cannot connect to {dataCom} because it's being used by another process.")
+            return
         self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
         self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
         self.dataCom.reset_output_buffer()
         self.logger.info('Connected')
-    
+
+    def reconnect(self):
+        self.cliCom.close()
+        time.sleep(1)  # Wait for a while before reopening the connection
+        self.cliCom.open()
+
     #send cfg over uart
     def sendCfg(self, cfg):
         for i, line in enumerate(cfg):
@@ -139,8 +161,10 @@ class uartParser():
                         sys.exit(1)
             except Exception as e:
                 self.logger.error(f"Error in sendCfg loop: {e}")
+                self.reconnect()  # Reconnect to the sensor
         time.sleep(0.1)
         self.cliCom.reset_input_buffer()
+
 
 
     #send single command to device over UART Com.
