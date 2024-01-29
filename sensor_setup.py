@@ -104,7 +104,15 @@ class Sensor():
         # Turn power back on
         result = subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'], capture_output=True)
         self.logger.info(f"Power on result: {result.stdout}, {result.stderr}")
+        
         time.sleep(10)  # Wait for the sensor to be ready
+        self.logger.info("20 Seconds Left")
+        time.sleep(10)  # Wait for the sensor to be ready
+        self.logger.info("10 Seconds Left")
+        time.sleep(5)  # Wait for the sensor to be ready
+        self.logger.info("5 Seconds Left")
+        time.sleep(5)  # Wait for the sensor to be ready
+        self.logger.info("Reinitializing")
 
         self.initialize_sensor()  # Reinitialize the sensor
         self.start()  # Start the sensor
