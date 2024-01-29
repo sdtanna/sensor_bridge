@@ -140,11 +140,11 @@ class uartParser():
             elif(line[-1] != '\n'):
                 cfg[i] = cfg[i] + '\n'
         for line in cfg:
-            time.sleep(.1) # Line delay
+            time.sleep(.1)  # Line delay
             try:
                 if(self.cliCom.baudrate == 1250000):
                     for char in [*line]:
-                        time.sleep(.01) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
+                        time.sleep(.01)  # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
                         self.cliCom.write(char.encode())
                 else:
                     self.cliCom.write(line.encode())
@@ -153,7 +153,7 @@ class uartParser():
                 ack = self.cliCom.readline()
                 self.logger.info(ack)
                 splitLine = line.split()
-                if(splitLine[0] == "baudRate"): # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
+                if(splitLine[0] == "baudRate"):  # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
                     try:
                         self.cliCom.baudrate = int(splitLine[1])
                     except:
