@@ -8,7 +8,6 @@ import time
 import numpy as np
 import math
 import datetime
-import subprocess
 
 
  
@@ -28,7 +27,7 @@ from parseFrame import *
 # Then call readAndParseUart() to read one frame of data from the device. The gui this is packaged with calls this every frame period.
 # readAndParseUart() will return all radar detection and tracking information.
 class uartParser():
-    def __init__(self, cliCom, dataCom, type='SDK Out of Box Demo', socket_handler = None):
+    def __init__(self,type='SDK Out of Box Demo', socket_handler = None):
         # Set this option to 1 to save UART output from the radar device
         self.socket_handler = socket_handler
         self.saveBinary = 0
@@ -41,15 +40,16 @@ class uartParser():
         self.logger = logging.getLogger(__name__)
         self.logger.info("Logger initialized")
 
+
         self.filepath = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+
+            
+        
         self.parserType = "DoubleCOMPort"
 
         # Data storage
-        self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')      
-
-        # Initialize cliCom and dataCom
-        self.cliCom = cliCom
-        self.dataCom = dataCom      
+        self.now_time = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+        
     
     def readAndParseUartDoubleCOMPort(self):
         self.fail = 0
@@ -98,78 +98,54 @@ class uartParser():
         except Exception as e:
             self.logger.error(f"Error parsing frame: {e}")
 
+   
+            
+  
     # Find various utility functions here for connecting to COM Ports, send data, etc...
     # Connect to com ports
     # Call this function to connect to the comport. This takes arguments self (intrinsic), cliCom, and dataCom. No return, but sets internal variables in the parser object.
-    def check_com_port(self, port):
-        result = subprocess.run(['lsof', port], capture_output=True, text=True)
-        if result.stdout:
-            self.logger.info(f"The {port} is being used by the following process(es):")
-            self.logger.info(result.stdout)
-            return False
-        else:
-            self.logger.info(f"The {port} is not being used by any process.")
-            return True
-        
     def connectComPorts(self, cliCom, dataCom):
-        for _ in range(5):  # Retry up to 5 times
-            if not self.check_com_port(cliCom):
-                self.logger.error(f"Cannot connect to {cliCom} because it's being used by another process.")
-                time.sleep(2)  # Wait for 2 seconds before retrying
-                continue
-            if not self.check_com_port(dataCom):
-                self.logger.error(f"Cannot connect to {dataCom} because it's being used by another process.")
-                time.sleep(2)  # Wait for 2 seconds before retrying
-                continue
-            try:
-                self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
-                self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
-                self.dataCom.reset_output_buffer()
-                self.logger.info('Connected')
-                break  # If connection is successful, break the loop
-            except Exception as e:
-                self.logger.error(f"Error connecting to COM ports: {e}")
-                time.sleep(2)  # Wait for 2 seconds before retrying
-
-
-    def reconnect(self):
-        self.cliCom.close()
-        time.sleep(1)  # Wait for a while before reopening the connection
-        self.cliCom.open()
-
+        self.cliCom = serial.Serial(cliCom, 115200, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,timeout=1)
+        self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
+        self.dataCom.reset_output_buffer()
+        self.logger.info('Connected')
+    
     #send cfg over uart
     def sendCfg(self, cfg):
+        # Ensure each line ends in \n for proper parsing
         for i, line in enumerate(cfg):
+            # Remove empty lines from cfg
             if(line == '\n'):
                 cfg.remove(line)
+            # add a newline to the end of every line (protects against last line not having a newline at the end of it)
             elif(line[-1] != '\n'):
                 cfg[i] = cfg[i] + '\n'
+
         for line in cfg:
-            time.sleep(.1)  # Line delay
-            try:
-                if(self.cliCom.baudrate == 1250000):
-                    for char in [*line]:
-                        time.sleep(.01)  # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
-                        self.cliCom.write(char.encode())
-                else:
-                    self.cliCom.write(line.encode())
-                ack = self.cliCom.readline()
-                self.logger.info(ack)
-                ack = self.cliCom.readline()
-                self.logger.info(ack)
-                splitLine = line.split()
-                if(splitLine[0] == "baudRate"):  # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
-                    try:
-                        self.cliCom.baudrate = int(splitLine[1])
-                    except:
-                        self.logger.error("Invalid baud rate")
-                        sys.exit(1)
-            except Exception as e:
-                self.logger.error(f"Error in sendCfg loop: {e}")
-                self.reconnect()  # Reconnect to the sensor
+            time.sleep(.1) # Line delay
+
+            if(self.cliCom.baudrate == 1250000):
+                for char in [*line]:
+                    time.sleep(.01) # Character delay. Required for demos which are 1250000 baud by default else characters are skipped
+                    self.cliCom.write(char.encode())
+            else:
+                self.cliCom.write(line.encode())
+                
+            ack = self.cliCom.readline()
+            self.logger.info(ack)
+            ack = self.cliCom.readline()
+            self.logger.info(ack)
+            splitLine = line.split()
+            if(splitLine[0] == "baudRate"): # The baudrate CLI line changes the CLI baud rate on the next cfg line to enable greater data streaming off the IWRL device.
+                try:
+                    self.cliCom.baudrate = int(splitLine[1])
+                except:
+                    self.logger.error("Invalid baud rate")
+                    sys.exit(1)
+        # Give a short amount of time for the buffer to clear
         time.sleep(0.1)
         self.cliCom.reset_input_buffer()
-
+        # NOTE - Do NOT close the CLI port because 6432 will use it after configuration
 
 
     #send single command to device over UART Com.
