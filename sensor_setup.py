@@ -80,25 +80,34 @@ class Sensor():
         self.logger.info("Sensor Stopped")
     
     def restartSensor(self):
-        self.sensor_cmd({'data': 'stopSensor'})  # Reset the sensor
-        self.sensor_powered = False  # Set sensor_powered to False before turning off power to disallow UART reading
-        # Turn off power to USB port
-        self.logger.info("Beginning Restart")
-        time.sleep(2)   #Ensure Sensor is stopped
-        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'])
-        self.logger.info("5 Seconds Left")
-        time.sleep(5)
-        self.logger.info("Reboot Complete")
-        # Turn power back on
-        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'])
-        self.logger.info("Power Re-Initialized, Please Wait")
+        #Stop Sensor Communications & UART Reading
+        self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
+        self.sensor_powered = False                                         #Set sensor_powered to False before turning off power to disallow UART reading
+
+        #Turn off power to USB port
+        self.logger.info("Turning USB Power OFF")
+        time.sleep(5)                                                       #Ensure Sensor is stopped
+        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'])           #Turn Power Off
+        self.logger.info("10 Seconds Left")
+        time.sleep(10)                                                      #Wait 10 Seconds
+        self.logger.info("Reboot Complete, Turning USB Power ON")       
+
+        #Turn USB power back on
+        subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'])           #Turn Power Back On
+        self.logger.info("Power Re-Initialized, Please Wait 30 Seconds")    #Wait 30 Seconds
         time.sleep(10)  # Wait for the sensor to be ready
+        self.logger.info("20 Seconds Left")
+        time.sleep(10)
+        self.logger.info("10 Seconds Left")
+        time.sleep(5)
         self.logger.info("5 Seconds Left")
         time.sleep(5)
-        self.logger.info("Starting the Sensor Up")
-        self.start()    #Start up the Sensor again
+        self.logger.info("Re-starting the Sensor Up")
+
+        #Start Sensor Communications and UART Reading
+        self.start()                                                        #Start up the Sensor again
         self.logger.info("Sensor Restart Completed SUCCESSFULLY")
-        self.sensor_powered = True  # Set sensor_powered back to True after turning power back on to allow UART reading
+        self.sensor_powered = True                                          #Set sensor_powered back to True after turning power back on to allow UART reading
 
     def sensor_cmd(self, data):
         command = data['data']
