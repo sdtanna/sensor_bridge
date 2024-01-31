@@ -32,6 +32,7 @@ class Sensor():
         self.sh.sio.on('command', self.sensor_cmd)
     
         self.is_running = True
+        self.is_powered = True
 
         atexit.register(self.sensor_stop)
         signal.signal(signal.SIGINT, self.sensor_stop)
@@ -63,11 +64,12 @@ class Sensor():
 
     def parse_data(self):
         while self.is_running:
-            try:
-                self.parser.readAndParseUartDoubleCOMPort()
-            except Exception as e:
-                self.logger.error(f"Error reading and parsing UART: {e}")
-        time.sleep(1/self.FPS)
+            if self.is_powered:
+                try:
+                    self.parser.readAndParseUartDoubleCOMPort()
+                except Exception as e:
+                    self.logger.error(f"Error reading and parsing UART: {e}")
+            time.sleep(1/self.FPS)
 
 
     def sensor_stop(self, signum=None, frame=None):
@@ -80,7 +82,7 @@ class Sensor():
     def restartSensor(self):
         #Stop Sensor Communications & UART Reading
         self.logger.info("Beginning Restart")
-        self.is_running = False                                             #Set is_running back to False after turning power back on to allow UART reading
+        self.is_powered = False                                             #Set is_running back to False after turning power back on to allow UART reading
         time.sleep(1)
         self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
         self.logger.info("Sensor Stopped Successfully")
@@ -119,7 +121,7 @@ class Sensor():
         #Start Sensor Communications and UART Reading
         self.start()                                                        #Start up the Sensor again
         self.logger.info("Sensor Restart Completed SUCCESSFULLY")
-        self.is_running = True                                              #Set is_running back to True after turning power back on to allow UART reading
+        self.is_powered = True                                              #Set is_running back to True after turning power back on to allow UART reading
 
     def sensor_cmd(self, data):
         command = data['data']
