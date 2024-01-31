@@ -79,6 +79,7 @@ class Sensor():
     
     def restartSensor(self):
         #Stop Sensor Communications & UART Reading
+        self.is_running = False                                             #Set is_running back to False after turning power back on to allow UART reading
         self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
         self.parser.disconnectComPorts()                                    #Disconnect the Com Ports
 
