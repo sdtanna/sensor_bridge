@@ -79,6 +79,7 @@ class Sensor():
     
     def restartSensor(self):
         #Stop Sensor Communications & UART Reading
+        self.logger.info("Beginning Restart")
         self.is_running = False                                             #Set is_running back to False after turning power back on to allow UART reading
         time.sleep(1)
         self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
