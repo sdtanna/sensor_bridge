@@ -101,12 +101,8 @@ class Sensor():
 
         #Turn USB power back on
         subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'])           #Turn Power Back On
-        self.logger.info("Power Re-Initialized, Please Wait 30 Seconds")    #Wait 30 Seconds
-        time.sleep(10)  # Wait for the sensor to be ready
-        self.logger.info("20 Seconds Left")
-        time.sleep(10)
-        self.logger.info("10 Seconds Left")
-        time.sleep(5)
+        self.logger.info("Power Re-Initialized, Please Wait 10 Seconds")    #Wait 30 Seconds
+        time.sleep(5)                                                       #Wait for the sensor to be ready
         self.logger.info("5 Seconds Left")
         time.sleep(5)
         self.logger.info("Re-starting the Sensor Up")
