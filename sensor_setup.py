@@ -80,12 +80,17 @@ class Sensor():
     def restartSensor(self):
         #Stop Sensor Communications & UART Reading
         self.is_running = False                                             #Set is_running back to False after turning power back on to allow UART reading
+        time.sleep(1)
         self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
+        self.logger.info("Sensor Stopped Successfully")
+        time.sleep(5)
+        self.logger.info("Attempting to Disconnect COM Ports")
         self.parser.disconnectComPorts()                                    #Disconnect the Com Ports
+        self.logger.info("Both COM Ports Disconnected")
+        time.sleep(5)                                                       #Ensure Sensor is stopped
 
         #Turn off power to USB port
         self.logger.info("Turning USB Power OFF")
-        time.sleep(5)                                                       #Ensure Sensor is stopped
         subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'])           #Turn Power Off
         self.logger.info("10 Seconds Left")
         time.sleep(10)                                                      #Wait 10 Seconds
