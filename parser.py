@@ -109,7 +109,15 @@ class uartParser():
         self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
         self.dataCom.reset_output_buffer()
         self.logger.info('Connected')
-    
+
+    def disconnectComPorts(self):
+        if self.cliCom.is_open:
+            self.cliCom.close()
+            self.logger.info('CLI COM Port disconnected')
+        if self.dataCom.is_open:
+            self.dataCom.close()
+            self.logger.info('Data COM Port disconnected')
+
     #send cfg over uart
     def sendCfg(self, cfg):
         # Ensure each line ends in \n for proper parsing
