@@ -162,14 +162,23 @@ class uartParser():
         time.sleep(.1)
         ack = self.cliCom.readline()
 
+        if not ack.strip():  #Check if the response is an empty byte string (b")
+            self.logger.error("Sensor unresponsive.")
+            return False
+
         self.logger.info(ack)
         time.sleep(.1)
 
         ack = self.cliCom.readline()
         time.sleep(.1)
+        if not ack.strip():  #Check if the response is an empty byte string (b")
+            self.logger.error("Sensor unresponsive.")
+            return False
 
         self.logger.info(ack)
         time.sleep(.1)
+
+        return True         #Responsive Command
 
         
 def getBit(byte, bitNum):

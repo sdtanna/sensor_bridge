@@ -86,25 +86,23 @@ class Sensor():
         time.sleep(1)
         self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
         self.logger.info("Sensor Stopped Successfully")
-        time.sleep(5)
+        time.sleep(1)
         self.logger.info("Attempting to Disconnect COM Ports")
         self.parser.disconnectComPorts()                                    #Disconnect the Com Ports
         self.logger.info("Both COM Ports Disconnected")
-        time.sleep(5)                                                       #Ensure Sensor is stopped
+        time.sleep(3)                                                       #Ensure Sensor is stopped
 
         #Turn off power to USB port
         self.logger.info("Turning USB Power OFF")
         subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '0'])           #Turn Power Off
-        self.logger.info("10 Seconds Left")
-        time.sleep(10)                                                      #Wait 10 Seconds
+        self.logger.info("3 Seconds Left")
+        time.sleep(3)                                                      #Wait 10 Seconds
         self.logger.info("Reboot Complete, Turning USB Power ON")       
 
         #Turn USB power back on
         subprocess.run(['sudo', 'uhubctl', '-l', '2', '-a', '1'])           #Turn Power Back On
-        self.logger.info("Power Re-Initialized, Please Wait 10 Seconds")    #Wait 30 Seconds
+        self.logger.info("Power Re-Initialized, Please Wait 5 Seconds")    #Wait 30 Seconds
         time.sleep(5)                                                       #Wait for the sensor to be ready
-        self.logger.info("5 Seconds Left")
-        time.sleep(5)
         self.logger.info("Re-starting the Sensor Up")
 
         #Re-Connect to COM Ports
@@ -124,14 +122,17 @@ class Sensor():
 
         if command == 'startSensor':
             # Code to handle startSensor command
-            self.parser.sendLine("sensorStart 0\n")
+            if not self.parser.sendLine("sensorStart 0\n"):     #Check if Unresponsive & Restart if it is
+                self.restartSensor()
 
         elif command == 'stopSensor':
             # Code to handle stopSensor command
-            self.parser.sendLine("sensorStop\n")
+            if not self.parser.sendLine("sensorStop\n"):        #Check if Unresponsive & Restart if it is
+                self.restartSensor()
 
         elif command == 'resetSensor':
-            self.parser.sendLine("resetDevice\n")
+            if not self.parser.sendLine("sensorStop\n"):        #Check if Unresponsive & Restart if it is
+                self.restartSensor()
         
         elif command == 'cfg':
             self.parser.sendCfg(self.cfg)
