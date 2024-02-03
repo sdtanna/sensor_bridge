@@ -84,9 +84,9 @@ class Sensor():
         self.logger.info("Beginning Restart")
         self.is_powered = False                                             #Set is_running back to False after turning power back on to allow UART reading
         time.sleep(1)
-        self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
-        self.logger.info("Sensor Stopped Successfully")
-        time.sleep(1)
+        #self.sensor_cmd({'data': 'stopSensor'})                             #Stop the sensor
+        #self.logger.info("Sensor Stopped Successfully")
+        #time.sleep(1)
         self.logger.info("Attempting to Disconnect COM Ports")
         self.parser.disconnectComPorts()                                    #Disconnect the Com Ports
         self.logger.info("Both COM Ports Disconnected")
