@@ -135,7 +135,8 @@ class Sensor():
                 self.restartSensor()
         
         elif command == 'cfg':
-            self.parser.sendCfg(self.cfg)
+            if not self.parser.sendCfg(self.cfg):
+                self.restartSensor()
 
         elif command == 'restartSensor':
             self.restartSensor()
