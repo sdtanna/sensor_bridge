@@ -151,14 +151,11 @@ class uartParser():
                     self.logger.error("Invalid baud rate")
                     sys.exit(1)
             
-            if not ack.strip():
-                self.logger.error("Sensor unresponsive.")
-                return False
         # Give a short amount of time for the buffer to clear
         time.sleep(0.1)
         self.cliCom.reset_input_buffer()
         # NOTE - Do NOT close the CLI port because 6432 will use it after configuration
-        return True         #Sensor is Responsive
+
 
     #send single command to device over UART Com.
     def sendLine(self, line):
