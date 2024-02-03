@@ -150,7 +150,6 @@ class uartParser():
                 except:
                     self.logger.error("Invalid baud rate")
                     sys.exit(1)
-            
         # Give a short amount of time for the buffer to clear
         time.sleep(0.1)
         self.cliCom.reset_input_buffer()
