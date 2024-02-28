@@ -58,7 +58,7 @@ class Sensor():
         self.logger.info("Starting Sensor")
         
         
-        with open("ISK_6m_default.cfg", 'r') as cfg_file:
+        with open("sensor1.cfg", 'r') as cfg_file:
                 self.cfg = cfg_file.readlines()
         self.logger.info("sending cfg")
         self.parser.sendCfg(self.cfg)
