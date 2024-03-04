@@ -109,7 +109,15 @@ class uartParser():
         self.dataCom = serial.Serial(dataCom, 921600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=1)
         self.dataCom.reset_output_buffer()
         self.logger.info('Connected')
-    
+
+    def disconnectComPorts(self):
+        if self.cliCom.is_open:
+            self.cliCom.close()
+            self.logger.info('CLI COM Port disconnected')
+        if self.dataCom.is_open:
+            self.dataCom.close()
+            self.logger.info('Data COM Port disconnected')
+
     #send cfg over uart
     def sendCfg(self, cfg):
         # Ensure each line ends in \n for proper parsing
@@ -154,14 +162,23 @@ class uartParser():
         time.sleep(.1)
         ack = self.cliCom.readline()
 
+        if not ack.strip():  #Check if the response is an empty byte string (b")
+            self.logger.error("Sensor unresponsive.")
+            return False
+
         self.logger.info(ack)
         time.sleep(.1)
 
         ack = self.cliCom.readline()
         time.sleep(.1)
+        if not ack.strip():  #Check if the response is an empty byte string (b")
+            self.logger.error("Sensor unresponsive.")
+            return False
 
         self.logger.info(ack)
         time.sleep(.1)
+
+        return True         #Responsive Command
 
         
 def getBit(byte, bitNum):
