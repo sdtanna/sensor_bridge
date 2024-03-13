@@ -14,7 +14,7 @@ import subprocess
 
 class Sensor():
         
-    FPS = 16  # Set the desired frame time
+    FPS = 8  # Set the desired frame time
     CLI_COM_PORT = "/dev/ttyUSB0"
     DATA_COM_PORT = "/dev/ttyUSB1"
 
