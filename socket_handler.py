@@ -63,7 +63,7 @@ class socketHandeler():
             while self.connected:
                 try:
                     self.sio.emit('heartbeat', {'ping': '1'})
-                    self.logger.info("Heartbeat sent")
+                    self.logger.debug("Heartbeat sent")
                 except Exception as e:
                     self.logger.error(f"Failed to send heartbeat: {e}")
                     self.connected = False  # Assume disconnected and trigger reconnection logic
